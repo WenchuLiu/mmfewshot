@@ -30,7 +30,7 @@ num_classes = 5
 model = dict(
     pretrained='open-mmlab://detectron2/resnet101_caffe',
     backbone=dict(depth=101),
-    roi_head=dict(bbox_head=dict(num_classes=num_classes)))
+    roi_head=dict(bbox_head=dict(num_classes=num_classes, num_meta_classes=num_classes)))
 
 lr_config = dict(warmup_iters=500,
                  step=[total_images//(batch_size*gpu_number) * step_epoch,
