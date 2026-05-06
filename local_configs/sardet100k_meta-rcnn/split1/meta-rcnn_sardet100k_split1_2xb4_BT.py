@@ -26,6 +26,4 @@ evaluation = dict(interval=total_images//(batch_size*gpu_number)*6,
                   metric='bbox',
                   classwise=True)
 checkpoint_config = dict(interval=total_images//(batch_size*gpu_number))
-optimizer = dict(lr=0.02 * batch_size * gpu_number / 16)
-
-auto_scale_lr = dict(base_batch_size=2*8, enable=True)
+optimizer = dict(lr=0.005)
