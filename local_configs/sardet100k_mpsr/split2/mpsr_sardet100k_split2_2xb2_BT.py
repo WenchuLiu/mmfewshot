@@ -35,9 +35,16 @@ runner = dict(max_iters=total_images//(batch_size*gpu_number) * total_epoch)
 # model settings
 data = dict(samples_per_gpu=batch_size,
             workers_per_gpu=batch_size,
-            train=dict(classes='BASE_CLASSES_SPLIT2'),
-            val=dict(classes='BASE_CLASSES_SPLIT2'),
-            test=dict(classes='BASE_CLASSES_SPLIT2'))
+            train=dict(
+                classes='BASE_CLASSES_SPLIT2',
+                dataset=dict(
+                    ann_cfg=[dict(ann_file='data/sardet100k/split2/base_train.json')])),
+            val=dict(
+                classes='BASE_CLASSES_SPLIT2',
+                ann_cfg=[dict(ann_file='data/sardet100k/split2/FewShot_test.json')]),
+            test=dict(
+                classes='BASE_CLASSES_SPLIT2',
+                ann_cfg=[dict(ann_file='data/sardet100k/split2/FewShot_test.json')]))
 evaluation = dict(interval=total_images//(batch_size*gpu_number)*6,
                   metric='bbox',
                   classwise=True)

@@ -5,13 +5,20 @@ _base_ = [
     '../../_base_/default_runtime.py'
 ]
 
-# Override classes for split2
+# Override classes and ann paths for split2
 data = dict(
     samples_per_gpu=4,
     workers_per_gpu=4,
-    train=dict(classes='BASE_CLASSES_SPLIT2'),
-    val=dict(classes='BASE_CLASSES_SPLIT2'),
-    test=dict(classes='BASE_CLASSES_SPLIT2'))
+    train=dict(
+        classes='BASE_CLASSES_SPLIT2',
+        dataset=dict(
+            ann_cfg=[dict(ann_file='data/sardet100k/split2/base_train.json')])),
+    val=dict(
+        classes='BASE_CLASSES_SPLIT2',
+        ann_cfg=[dict(ann_file='data/sardet100k/split2/base_test.json')]),
+    test=dict(
+        classes='BASE_CLASSES_SPLIT2',
+        ann_cfg=[dict(ann_file='data/sardet100k/split2/FewShot_test.json')]))
 
 total_images = 79625
 total_epoch = 12
