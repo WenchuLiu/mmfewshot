@@ -1,0 +1,29 @@
+_base_ = [
+    '../../_base_/few_shot_sar-aircraft_nwaykshot.py',
+    '../../_base_/schedule.py', '../meta-rcnn_r101_c4.py',
+    '../../_base_/default_runtime.py'
+]
+# classes splits are predefined in FewShotSARAircraftDataset
+num_shots = 30
+data = dict(
+    train=dict(
+        save_dataset=True,
+        dataset=dict(
+            type='FewShotSARAircraftDefaultDataset',
+            ann_cfg=[dict(method='MetaRCNN', setting=f'{num_shots}SHOT')],
+            num_novel_shots=num_shots,
+            num_base_shots=num_shots,
+            )),
+        model_init=dict(classes='ALL_CLASSES_SPLIT1'))
+evaluation = dict(
+    interval=1000, class_splits=['BASE_CLASSES_SPLIT1', 'NOVEL_CLASSES_SPLIT1'])
+checkpoint_config = dict(interval=1000)
+optimizer = dict(lr=0.001)
+lr_config = dict(warmup=None)
+runner = dict(max_iters=2000)
+# load_from = 'path of base training model'
+load_from =     'work_dirs/meta-rcnn_sar-aircraft_split1_2xb4_BT/base_model_random_init_bbox_head.pth'
+# model settings
+model = dict(frozen_parameters=[
+    'backbone', 'shared_head', 'rpn_head', 'aggregation_layer'
+])

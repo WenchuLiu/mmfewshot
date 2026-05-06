@@ -1,0 +1,158 @@
+{
+    "images": [
+        {
+            "file_name": "0095731.jpg",
+            "height": 256,
+            "width": 256,
+            "id": 24419
+        },
+        {
+            "file_name": "0002770.png",
+            "height": 256,
+            "width": 256,
+            "id": 79526
+        },
+        {
+            "file_name": "0100483.png",
+            "height": 256,
+            "width": 256,
+            "id": 87057
+        },
+        {
+            "file_name": "0008895.jpg",
+            "height": 512,
+            "width": 512,
+            "id": 94100
+        },
+        {
+            "file_name": "0007078.jpg",
+            "height": 512,
+            "width": 512,
+            "id": 34932
+        },
+        {
+            "file_name": "0092532.jpg",
+            "height": 256,
+            "width": 256,
+            "id": 27413
+        }
+    ],
+    "annotations": [
+        {
+            "area": 899.0,
+            "iscrowd": 0,
+            "image_id": 24419,
+            "bbox": [
+                101.0,
+                41.0,
+                29.0,
+                31.0
+            ],
+            "category_id": 0,
+            "id": 48189,
+            "ignore": 0,
+            "segmentation": []
+        },
+        {
+            "area": 9047.0,
+            "iscrowd": 0,
+            "image_id": 34932,
+            "bbox": [
+                241.0,
+                346.0,
+                109.0,
+                83.0
+            ],
+            "category_id": 1,
+            "id": 84710,
+            "ignore": 0,
+            "segmentation": []
+        },
+        {
+            "area": 1485.0,
+            "iscrowd": 0,
+            "image_id": 94100,
+            "bbox": [
+                240.0,
+                234.0,
+                33.0,
+                45.0
+            ],
+            "category_id": 2,
+            "id": 193279,
+            "ignore": 0,
+            "segmentation": []
+        },
+        {
+            "area": 696.0,
+            "iscrowd": 0,
+            "image_id": 27413,
+            "bbox": [
+                1.0,
+                15.0,
+                24.0,
+                29.0
+            ],
+            "category_id": 3,
+            "id": 60841,
+            "ignore": 0,
+            "segmentation": []
+        },
+        {
+            "area": 77.0,
+            "iscrowd": 0,
+            "image_id": 79526,
+            "bbox": [
+                213.0,
+                204.0,
+                11.0,
+                7.0
+            ],
+            "category_id": 4,
+            "id": 151319,
+            "ignore": 0,
+            "segmentation": []
+        },
+        {
+            "area": 11544.0,
+            "iscrowd": 0,
+            "image_id": 87057,
+            "bbox": [
+                3.0,
+                137.0,
+                104.0,
+                111.0
+            ],
+            "category_id": 5,
+            "id": 174739,
+            "ignore": 0,
+            "segmentation": []
+        }
+    ],
+    "categories": [
+        {
+            "id": 0,
+            "name": "ship"
+        },
+        {
+            "id": 1,
+            "name": "aircraft"
+        },
+        {
+            "id": 2,
+            "name": "car"
+        },
+        {
+            "id": 3,
+            "name": "tank"
+        },
+        {
+            "id": 4,
+            "name": "bridge"
+        },
+        {
+            "id": 5,
+            "name": "harbor"
+        }
+    ]
+}

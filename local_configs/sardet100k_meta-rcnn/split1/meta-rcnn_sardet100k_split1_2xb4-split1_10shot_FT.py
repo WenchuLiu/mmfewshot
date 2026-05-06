@@ -1,0 +1,30 @@
+_base_ = [
+    '../../_base_/few_shot_sardet100k_nwaykshot.py',
+    '../../_base_/schedule.py', '../meta-rcnn_r101_c4.py',
+    '../../_base_/default_runtime.py'
+]
+# classes splits are predefined in FewShotVOCDataset
+# FewShotVOCDefaultDataset predefine ann_cfg for model reproducibility.
+num_shots = 10
+data = dict(
+    train=dict(
+        save_dataset=True,
+        dataset=dict(
+            type='FewShotSARDet100KDefaultDataset',
+            ann_cfg=[dict(method='MetaRCNN', setting=f'{num_shots}SHOT')],
+            num_novel_shots=num_shots,
+            num_base_shots=num_shots,
+            )),
+        model_init=dict(classes='ALL_CLASSES'))
+evaluation = dict(
+    interval=1000, class_splits=['BASE_CLASSES_SPLIT1', 'NOVEL_CLASSES_SPLIT1'])
+checkpoint_config = dict(interval=200)
+optimizer = dict(lr=0.001)
+lr_config = dict(warmup=None)
+runner = dict(max_iters=1000)
+load_from = \
+    'work_dirs/meta-rcnn_sardet100k_split1_2xb4_BT/base_model_random_init_bbox_head.pth'
+# model settings
+model = dict(frozen_parameters=[
+    'backbone', 'shared_head', 'rpn_head', 'aggregation_layer'
+])

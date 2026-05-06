@@ -1,0 +1,11 @@
+{
+    "split": "split1",
+    "categories": [
+        "ship",
+        "aircraft",
+        "car",
+        "tank",
+        "bridge",
+        "harbor"
+    ]
+}
