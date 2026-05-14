@@ -53,7 +53,7 @@ data = dict(
             ann_cfg=[
                 dict(
                     type='ann_file',
-                ann_file=data_root + 'split1/base_train.json')
+                    ann_file=data_root + 'split1/base_train.json')
             ],
             img_prefix=data_root+'JPEGImages/train/',
             multi_pipelines=train_multi_pipelines,

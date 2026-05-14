@@ -43,21 +43,33 @@ data = dict(
         type='NWayKShotDataset',
         num_support_ways=5,
         num_support_shots=1,
-        one_support_shot_per_image=False,
-        num_used_support_shots=30,
+        one_support_shot_per_image=True,
+        num_used_support_shots=200,
         save_dataset=False,
         dataset=dict(
             type='FewShotSARAircraftDataset',
             ann_cfg=[
                 dict(
                     type='ann_file',
-                ann_file=data_root + 'split1/base_trainval.json')
+                    ann_file=data_root + 'split1/base_trainval.json')
             ],
             img_prefix=data_root+'JPEGImages/',
             multi_pipelines=train_multi_pipelines,
             classes='BASE_CLASSES_SPLIT1',
             instance_wise=False,
-            dataset_name='query_support_dataset')),
+            dataset_name='query_dataset'),
+        support_dataset=dict(
+            type='FewShotSARAircraftDataset',
+            ann_cfg=[
+                dict(
+                    type='ann_file',
+                    ann_file=data_root + 'split1/base_trainval.json')
+            ],
+            img_prefix=data_root+'JPEGImages/',
+            multi_pipelines=train_multi_pipelines,
+            classes='BASE_CLASSES_SPLIT1',
+            instance_wise=False,
+            dataset_name='support_dataset')),
     val=dict(
         type='FewShotSARAircraftDataset',
         ann_cfg=[

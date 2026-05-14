@@ -42,7 +42,7 @@ data = dict(
     workers_per_gpu=4,
     train=dict(
         type='NWayKShotDataset',
-        num_support_ways=6,
+        num_support_ways=7,
         num_support_shots=1,
         one_support_shot_per_image=False,
         num_used_support_shots=30,
@@ -52,7 +52,7 @@ data = dict(
             ann_cfg=[
                 dict(
                     type='ann_file',
-                ann_file=data_root + 'Annotations/trainval.json')
+                    ann_file=data_root + 'Annotations/trainval.json')
             ],
             img_prefix=data_root+'JPEGImages/',
             multi_pipelines=train_multi_pipelines,
