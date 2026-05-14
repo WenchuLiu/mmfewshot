@@ -659,27 +659,27 @@ class FewShotSARDet100KDefaultDataset(FewShotSARDet100KDataset):
             For example: [dict(method='TFA', setting='1shot')].
     """
 
-    # sardet100k_benchmark = {
-    #     f'{shot}SHOT': [
-    #         dict(
-    #             type='ann_file',
-    #             ann_file=f'data/few_shot_ann/sardet100k/sar_seed1/'
-    #             f'full_box_{shot}shot_{class_name}_trainval.json')
-    #         for class_name in SARDET100K_SPLIT['ALL_CLASSES']
-    #     ]
-    #     for shot in [1, 2, 3, 5, 10, 30]
-    # }
-
     sardet100k_benchmark = {
         f'SPLIT{split}_{shot}SHOT': [
             dict(
                 type='ann_file',
-                ann_file=f'data/sardet100k/split{split}/'
+                ann_file=f'data/sardet100k/split1/'
                 f'FewShot_{shot}shot_train_seed0.json')
                 # f'SARDet100K_{shot}shot_train_seed42.json')
         ]
         for shot in [1, 2, 3, 5, 10, 30] for split in [1, 2]
     }
+
+    # sardet100k_benchmark = {
+    #     f'SPLIT{split}_{shot}SHOT': [
+    #         dict(
+    #             type='ann_file',
+    #             ann_file=f'data/sardet100k/split{split}/'
+    #             f'FewShot_{shot}shot_train_seed0.json')
+    #             # f'SARDet100K_{shot}shot_train_seed42.json')
+    #     ]
+    #     for shot in [1, 2, 3, 5, 10, 30] for split in [1, 2]
+    # }
 
     # pre-defined annotation config for model reproducibility
     DEFAULT_ANN_CONFIG = dict(
@@ -696,7 +696,9 @@ class FewShotSARDet100KDefaultDataset(FewShotSARDet100KDataset):
         MPSR=sardet100k_benchmark,
         MetaRCNN=sardet100k_benchmark,
         FSDetView=sardet100k_benchmark,
-        VFA=sardet100k_benchmark)
+        VFA=sardet100k_benchmark,
+        GFSDet=sardet100k_benchmark,
+        SAE_FSDet=sardet100k_benchmark)
 
     def __init__(self, ann_cfg: List[Dict], **kwargs) -> None:
         super().__init__(ann_cfg=ann_cfg, **kwargs)

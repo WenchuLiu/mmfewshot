@@ -13,7 +13,7 @@ data = dict(
     workers_per_gpu=4,
     train=dict(
         type='FewShotSARAircraftDefaultDataset',
-        ann_cfg=[dict(method='TFA', setting=f'SPLIT1_{num_shots}SHOT')],
+        ann_cfg=[dict(method='GFSDet', setting=f'SPLIT1_{num_shots}SHOT')],
         num_novel_shots=num_shots,
         num_base_shots=num_shots))
 
@@ -43,7 +43,8 @@ model = dict(
                 loss_base_margin_weight=1.0,
                 loss_novel_margin_weight=1.0,
                 loss_neg_margin_weight=1.0,
-                power_weight=4.0),
+                power_weight=4.0,
+                novel_class_ids=novel_class_ids),
             base_cpt = 'work_dirs/tfa/sar-aircraft/split1/2xb8_BT/base_model_random_init_bbox_head.pth',
             novel_class_ids = [0, 5],
             init_cfg=[

@@ -7,8 +7,9 @@ from .two_branch_bbox_head import TwoBranchBBoxHead
 from .vfa_bbox_head import VFABBoxHead
 
 from .kd_bbox_head import DisKDBBoxHead
+from .lcc_bbox_head import LCCBoxHead
 __all__ = [
     'CosineSimBBoxHead', 'ContrastiveBBoxHead', 'MultiRelationBBoxHead',
     'MetaBBoxHead', 'TwoBranchBBoxHead',
-    'DisKDBBoxHead', 'DisCosSimBBoxHead', 'VFABBoxHead'
+    'DisKDBBoxHead', 'DisCosSimBBoxHead', 'LCCBoxHead', 'VFABBoxHead'
 ]

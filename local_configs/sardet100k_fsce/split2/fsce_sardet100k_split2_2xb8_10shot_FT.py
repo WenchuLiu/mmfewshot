@@ -46,11 +46,11 @@ data = dict(
 #         rcnn=dict(
 #             assigner=dict(pos_iou_thr=0.5, neg_iou_thr=0.5, min_pos_iou=0.5))))
 
-evaluation = dict(interval=7000)
-checkpoint_config = dict(interval=7000)
+evaluation = dict(interval=6000)
+checkpoint_config = dict(interval=6000)
 optimizer = dict(lr=0.001)
 lr_config = dict(warmup_iters=100, gamma=0.3, step=[5000])
-runner = dict(max_iters=7000)
+runner = dict(max_iters=6000)
 model = dict(
     roi_head=dict(bbox_head=dict(num_classes=num_classes)),
     train_cfg=dict(

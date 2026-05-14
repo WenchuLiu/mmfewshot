@@ -17,7 +17,8 @@ class DisLoss(nn.Module):
                  ignore_neg=False,
                  reduction='sum',
                  loss_weight=1.0,
-                 power_weight=2.0):
+                 power_weight=2.0,
+                 novel_class_ids=None):
         super(DisLoss, self).__init__()
         self.max_diff = max_diff
         self.max_loss = max_loss
@@ -43,6 +44,11 @@ class DisLoss(nn.Module):
 
         self.num_classes = num_classes
         self.ignore_neg = ignore_neg
+        if novel_class_ids is not None:
+            if isinstance(novel_class_ids, int):
+                novel_class_ids = [novel_class_ids]
+            novel_class_ids = torch.tensor(novel_class_ids, dtype=torch.long)
+        self.register_buffer('novel_class_ids', novel_class_ids)
 
 
 
@@ -58,9 +64,16 @@ class DisLoss(nn.Module):
             loss_novel_margin_weight = self.loss_novel_margin_weight  * decay_rate
             loss_neg_margin_weight = self.loss_neg_margin_weight  * decay_rate
 
-        num_base_classes = self.num_classes // 4 * 3
-        base_inds = labels < num_base_classes
-        novel_inds = (labels >= num_base_classes) & (labels < self.num_classes)
+        fg_inds = labels < self.num_classes
+        if self.novel_class_ids is None:
+            num_base_classes = self.num_classes // 4 * 3
+            base_inds = labels < num_base_classes
+            novel_inds = (labels >= num_base_classes) & (
+                labels < self.num_classes)
+        else:
+            novel_ids = self.novel_class_ids.to(labels.device)
+            novel_inds = (labels[..., None] == novel_ids).any(dim=-1)
+            base_inds = fg_inds & ~novel_inds
         base_labels = labels[base_inds]
         novel_labels = labels[novel_inds]
         scores = cls_score.softmax(-1)
@@ -152,5 +165,4 @@ class DisLoss(nn.Module):
                 losses['loss_neg_margin'].clamp_(max=self.max_loss)
         
         return losses
-
 

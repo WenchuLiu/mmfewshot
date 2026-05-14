@@ -695,7 +695,9 @@ class FewShotSARAircraftDefaultDataset(FewShotSARAircraftDataset):
         MPSR=SARAircraft_benchmark,
         MetaRCNN=SARAircraft_benchmark,
         FSDetView=SARAircraft_benchmark,
-        VFA=SARAircraft_benchmark)
+        VFA=SARAircraft_benchmark,
+        GFSDet=SARAircraft_benchmark,
+        SAE_FSDet=SARAircraft_benchmark)
 
     def __init__(self, ann_cfg: List[Dict], **kwargs) -> None:
         super().__init__(ann_cfg=ann_cfg, **kwargs)

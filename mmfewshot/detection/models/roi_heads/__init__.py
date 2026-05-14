@@ -3,6 +3,7 @@ from .bbox_heads import (ContrastiveBBoxHead, CosineSimBBoxHead,
                          MultiRelationBBoxHead, VFABBoxHead)
 from .contrastive_roi_head import ContrastiveRoIHead
 from .fsdetview_roi_head import FSDetViewRoIHead
+from .lcc_roi_head import LCCRoIHead
 from .meta_rcnn_roi_head import MetaRCNNRoIHead
 from .multi_relation_roi_head import MultiRelationRoIHead
 from .shared_heads import MetaRCNNResLayer
@@ -12,6 +13,6 @@ from .vfa_roi_head import VFARoIHead
 __all__ = [
     'CosineSimBBoxHead', 'ContrastiveBBoxHead', 'MultiRelationBBoxHead',
     'VFABBoxHead', 'ContrastiveRoIHead', 'MultiRelationRoIHead',
-    'FSDetViewRoIHead', 'MetaRCNNRoIHead', 'MetaRCNNResLayer',
+    'FSDetViewRoIHead', 'LCCRoIHead', 'MetaRCNNRoIHead', 'MetaRCNNResLayer',
     'TwoBranchRoIHead', 'VFARoIHead'
 ]
