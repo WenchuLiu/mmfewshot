@@ -19,10 +19,12 @@ data = dict(
     train=dict(
         dataset=dict(
             type='FewShotSARDet100KDefaultDataset',
-            ann_cfg=[dict(method='MPSR', setting=f'{num_shots}SHOT')],
+            ann_cfg=[dict(method='MPSR', setting=f'SPLIT2_{num_shots}SHOT')],
             num_novel_shots=num_shots,
             num_base_shots=num_shots,
-            classes='ALL_CLASSES_SPLIT2')))
+            classes='ALL_CLASSES_SPLIT2')),
+    val=dict(classes='ALL_CLASSES_SPLIT2'),
+    test=dict(classes='ALL_CLASSES_SPLIT2'))
 
 # 原来设置是2xb2，针对batchsize不同要做更改
 base_batch_size = 4  # 原始配置对应的batch size
@@ -46,7 +48,8 @@ lr_config = dict(
 runner = dict(max_iters=max_iters)
 
 load_from = \
-    'work_dirs/mpsr_sardet100k_split2_2xb2_BT/base_model_random_init_bbox_head.pth'
+    'work_dirs/mpsr/sardet100k/split2/2xb2_BT/base_model_random_init_bbox_head.pth'
+work_dir = 'work_dirs/mpsr/sardet100k/split2/2xb2_1shot_FT/'
 model = dict(
     roi_head=dict(
         bbox_head=dict(

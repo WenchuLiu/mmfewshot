@@ -11,7 +11,7 @@ data = dict(
         save_dataset=True,
         dataset=dict(
             type='FewShotSARDet100KDefaultDataset',
-            ann_cfg=[dict(method='MetaRCNN', setting=f'{num_shots}SHOT')],
+            ann_cfg=[dict(method='MetaRCNN', setting=f'SPLIT2_{num_shots}SHOT')],
             num_novel_shots=num_shots,
             num_base_shots=num_shots,
             )),
@@ -23,7 +23,8 @@ optimizer = dict(lr=0.001)
 lr_config = dict(warmup=None)
 runner = dict(max_iters=500)
 load_from = \
-    'work_dirs/meta-rcnn_sardet100k_split2_2xb4_BT/base_model_random_init_bbox_head.pth'
+    'work_dirs/meta-rcnn/sardet100k/split2/2xb4_BT/base_model_random_init_bbox_head.pth'
+work_dir = 'work_dirs/meta-rcnn/sardet100k/split2/2xb4-split2_3shot_FT/'
 # model settings
 model = dict(frozen_parameters=[
     'backbone', 'shared_head', 'rpn_head', 'aggregation_layer'

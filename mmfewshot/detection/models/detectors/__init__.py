@@ -6,8 +6,9 @@ from .meta_rcnn import MetaRCNN
 from .mpsr import MPSR
 from .query_support_detector import QuerySupportDetector
 from .tfa import TFA
+from .vfa import VFA
 
 __all__ = [
     'QuerySupportDetector', 'AttentionRPNDetector', 'FSCE', 'FSDetView', 'TFA',
-    'MPSR', 'MetaRCNN'
+    'MPSR', 'MetaRCNN', 'VFA'
 ]

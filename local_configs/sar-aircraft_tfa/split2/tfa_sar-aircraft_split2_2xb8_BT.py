@@ -37,9 +37,15 @@ runner = dict(max_iters=total_images//(batch_size*gpu_number) * total_epoch)
 # model settings
 data = dict(
     samples_per_gpu=batch_size,
-    train=dict(classes='BASE_CLASSES_SPLIT2'),
-    val=dict(classes='BASE_CLASSES_SPLIT2'),
-    test=dict(classes='BASE_CLASSES_SPLIT2'))
+    train=dict(
+        classes='BASE_CLASSES_SPLIT2',
+        ann_cfg=[dict(type='ann_file', ann_file='data/SAR-Aircraft-1.0/split2/base_trainval.json')]),
+    val=dict(
+        classes='BASE_CLASSES_SPLIT2',
+        ann_cfg=[dict(type='ann_file', ann_file='data/SAR-Aircraft-1.0/split2/base_test.json')]),
+    test=dict(
+        classes='BASE_CLASSES_SPLIT2',
+        ann_cfg=[dict(type='ann_file', ann_file='data/SAR-Aircraft-1.0/split2/base_test.json')]))
 evaluation = dict(interval=total_images//(batch_size*gpu_number)*2,
                   metric='bbox',
                   classwise=True)
@@ -47,3 +53,5 @@ checkpoint_config = dict(interval=total_images//(batch_size*gpu_number)*2)
 optimizer = dict(lr=0.02)  # 2 gpu 8 batch size
 
 # resume_from = 'work_dirs/tfa_sardet50k_2xb8_BT/latest.pth'
+
+work_dir = 'work_dirs/tfa/sar-aircraft/split2/2xb8_BT/'

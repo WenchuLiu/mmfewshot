@@ -30,3 +30,5 @@ evaluation = dict(interval=total_images//(batch_size*gpu_number)*6,
                   classwise=True)
 checkpoint_config = dict(interval=total_images//(batch_size*gpu_number))
 optimizer = dict(lr=0.005)
+
+work_dir = 'work_dirs/meta-rcnn/sardet100k/split1/2xb4_BT/'

@@ -2,13 +2,13 @@
 # sardet100k_tfa split2 training script
 
 # Step 1: Base Training
-bash tools/detection/dist_train_v2.sh local_configs/sardet100k_tfa/split2/tfa_sardet100k_split2_2xb8_BT.py 2
+# bash tools/detection/dist_train_v2.sh local_configs/sardet100k_tfa/split2/tfa_sardet100k_split2_2xb8_BT.py 2
 
 # Step 2: Initialize bbox head
-python tools/detection/misc/initialize_bbox_head.py --src1 work_dirs/tfa_sardet100k_split2_2xb8_BT/latest.pth --method random_init --save-dir work_dirs/tfa_sardet100k_split2_2xb8_BT/ --sardet100k
+# python tools/detection/misc/initialize_bbox_head.py --src1 work_dirs/tfa/sardet100k/split2/2xb8_BT/latest.pth --method random_init --save-dir work_dirs/tfa/sardet100k/split2/2xb8_BT/ --sardet100k --sardet100k_split 2
 
 # Step 3: Fine-tuning (6 shots)
-for shot in 1 2 3 5 10 30
+for shot in 1 3
 do
     CONFIG="local_configs/sardet100k_tfa/split2/tfa_sardet100k_split2_2xb8_${shot}shot_FT.py"
     echo ">>> Running Task: sardet100k_tfa/split2 SHOT_NUM=${shot} ..."

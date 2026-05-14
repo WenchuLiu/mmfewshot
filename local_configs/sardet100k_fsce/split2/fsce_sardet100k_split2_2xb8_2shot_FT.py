@@ -10,15 +10,30 @@ num_shots = 2
 num_classes = 6
 
 data = dict(
-    samples_per_gpu=8,
-    workers_per_gpu=8,
+    samples_per_gpu=2,
+    workers_per_gpu=2,
     train=dict(
         type='FewShotSARDet100KDefaultDataset',
-        ann_cfg=[dict(method='FSCE', setting=f'{num_shots}SHOT')],
+        ann_cfg=[dict(method='FSCE', setting=f'SPLIT2_{num_shots}SHOT')],
         num_novel_shots=num_shots,
         num_base_shots=num_shots,
+        classes='ALL_CLASSES_SPLIT2'),
+    val=dict(
+        ann_cfg=[
+            dict(
+                type='ann_file',
+                ann_file='data/sardet100k/split2/FewShot_test.json')
+        ],
+        img_prefix='data/sardet100k/JPEGImages/test/',
+        classes='ALL_CLASSES_SPLIT2'),
+    test=dict(
+        ann_cfg=[
+            dict(
+                type='ann_file',
+                ann_file='data/sardet100k/split2/FewShot_test.json')
+        ],
+        img_prefix='data/sardet100k/JPEGImages/test/',
         classes='ALL_CLASSES_SPLIT2'))
-
 
 # evaluation = dict(interval=5000)
 # checkpoint_config = dict(interval=5000)
@@ -31,7 +46,6 @@ data = dict(
 #         rcnn=dict(
 #             assigner=dict(pos_iou_thr=0.5, neg_iou_thr=0.5, min_pos_iou=0.5))))
 
-
 evaluation = dict(interval=6000)
 checkpoint_config = dict(interval=6000)
 optimizer = dict(lr=0.001)
@@ -43,6 +57,6 @@ model = dict(
         rcnn=dict(
             assigner=dict(pos_iou_thr=0.5, neg_iou_thr=0.5, min_pos_iou=0.5))))
 
-
-load_from = ('work_dirs/tfa_sardet100k_split2_2xb8_BT/'
+load_from = ('work_dirs/tfa/sardet100k/split2/2xb8_BT/'
              'base_model_random_init_bbox_head.pth')
+work_dir = 'work_dirs/fsce/sardet100k/split2/2xb8_2shot_FT/'

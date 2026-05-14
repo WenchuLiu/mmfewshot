@@ -10,7 +10,7 @@ data = dict(
         save_dataset=True,
         dataset=dict(
             type='FewShotSARAircraftDefaultDataset',
-            ann_cfg=[dict(method='MetaRCNN', setting=f'{num_shots}SHOT')],
+            ann_cfg=[dict(method='MetaRCNN', setting=f'SPLIT2_{num_shots}SHOT')],
             num_novel_shots=num_shots,
             num_base_shots=num_shots,
             )),
@@ -22,7 +22,8 @@ optimizer = dict(lr=0.001)
 lr_config = dict(warmup=None)
 runner = dict(max_iters=2000)
 # load_from = 'path of base training model'
-load_from =     'work_dirs/meta-rcnn_sar-aircraft_split2_2xb4_BT/base_model_random_init_bbox_head.pth'
+load_from =     'work_dirs/meta-rcnn/sar-aircraft/split2/2xb4_BT/base_model_random_init_bbox_head.pth'
+work_dir = 'work_dirs/meta-rcnn/sar-aircraft/split2/2xb4_10shot_FT/'
 # model settings
 model = dict(frozen_parameters=[
     'backbone', 'shared_head', 'rpn_head', 'aggregation_layer'

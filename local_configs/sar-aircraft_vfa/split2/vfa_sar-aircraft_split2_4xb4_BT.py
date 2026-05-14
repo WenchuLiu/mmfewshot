@@ -1,0 +1,52 @@
+_base_ = [
+    '../../_base_/base_sar-aircraft_nwaykshot.py',
+    '../../_base_/schedule.py',
+    '../vfa_r101_c4.py',
+    '../../_base_/default_runtime.py'
+]
+
+total_images = 13386
+total_epoch = 12
+step_epoch = 8
+batch_size = 4
+gpu_number = 4
+num_classes = 5
+
+model = dict(
+    backbone=dict(
+        depth=101,
+        init_cfg=dict(
+            type='Pretrained',
+            checkpoint='open-mmlab://detectron2/resnet101_caffe')),
+    roi_head=dict(
+        bbox_head=dict(
+            num_classes=num_classes,
+            num_meta_classes=num_classes)))
+
+lr_config = dict(
+    warmup_iters=500,
+    step=[
+        total_images // (batch_size * gpu_number) * step_epoch,
+        total_images // (batch_size * gpu_number) * (total_epoch - 1)
+    ])
+runner = dict(max_iters=total_images // (batch_size * gpu_number) * total_epoch)
+data = dict(samples_per_gpu=batch_size, workers_per_gpu=4,
+    train=dict(
+        classes='BASE_CLASSES_SPLIT2',
+        dataset=dict(
+            ann_cfg=[dict(type='ann_file', ann_file='data/SAR-Aircraft-1.0/split2/base_trainval.json')])),
+    val=dict(
+        classes='BASE_CLASSES_SPLIT2',
+        ann_cfg=[dict(type='ann_file', ann_file='data/SAR-Aircraft-1.0/split2/base_test.json')]),
+    test=dict(
+        classes='BASE_CLASSES_SPLIT2',
+        ann_cfg=[dict(type='ann_file', ann_file='data/SAR-Aircraft-1.0/split2/ft_test.json')]),
+    model_init=dict(classes='BASE_CLASSES_SPLIT2'))
+evaluation = dict(
+    interval=total_images // (batch_size * gpu_number) * 2,
+    metric='bbox',
+    classwise=True)
+checkpoint_config = dict(interval=total_images // (batch_size * gpu_number) * 2)
+optimizer = dict(lr=0.0025)
+
+work_dir = 'work_dirs/vfa/sar-aircraft/split2/4xb4_BT/'

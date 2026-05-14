@@ -390,6 +390,11 @@ class FewShotSARDet100KDataset(BaseFewShotDataset, CocoDataset):
         Returns:
             dict[str, float]: COCO style evaluation metric.
         """
+        if class_splits is None and self.split_id is not None:
+            class_splits = [
+                f'BASE_CLASSES_SPLIT{self.split_id}',
+                f'NOVEL_CLASSES_SPLIT{self.split_id}'
+            ]
         if class_splits is not None:
             for k in class_splits:
                 assert k in self.SPLIT.keys(), 'please define classes split.'
@@ -666,14 +671,14 @@ class FewShotSARDet100KDefaultDataset(FewShotSARDet100KDataset):
     # }
 
     sardet100k_benchmark = {
-        f'{shot}SHOT': [
+        f'SPLIT{split}_{shot}SHOT': [
             dict(
                 type='ann_file',
-                ann_file=f'data/sardet100k/split1/'
+                ann_file=f'data/sardet100k/split{split}/'
                 f'FewShot_{shot}shot_train_seed0.json')
                 # f'SARDet100K_{shot}shot_train_seed42.json')
         ]
-        for shot in [1, 2, 3, 5, 10, 30]
+        for shot in [1, 2, 3, 5, 10, 30] for split in [1, 2]
     }
 
     # pre-defined annotation config for model reproducibility
@@ -690,7 +695,8 @@ class FewShotSARDet100KDefaultDataset(FewShotSARDet100KDataset):
         },
         MPSR=sardet100k_benchmark,
         MetaRCNN=sardet100k_benchmark,
-        FSDetView=sardet100k_benchmark)
+        FSDetView=sardet100k_benchmark,
+        VFA=sardet100k_benchmark)
 
     def __init__(self, ann_cfg: List[Dict], **kwargs) -> None:
         super().__init__(ann_cfg=ann_cfg, **kwargs)

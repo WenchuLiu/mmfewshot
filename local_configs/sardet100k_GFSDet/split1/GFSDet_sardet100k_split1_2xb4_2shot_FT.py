@@ -14,7 +14,7 @@ data = dict(
     workers_per_gpu=4,
     train=dict(
         type='FewShotSARDet100KDefaultDataset',
-        ann_cfg=[dict(method='TFA', setting=f'{num_shots}SHOT')],
+        ann_cfg=[dict(method='TFA', setting=f'SPLIT1_{num_shots}SHOT')],
         num_novel_shots=num_shots,
         num_base_shots=num_shots))
 
@@ -45,7 +45,7 @@ model = dict(
                 loss_novel_margin_weight=1.0,
                 loss_neg_margin_weight=1.0,
                 power_weight=4.0),
-            base_cpt = 'work_dirs/tfa_sardet100k_split1_2xb8_BT/base_model_random_init_bbox_head.pth',
+            base_cpt = 'work_dirs/tfa/sardet100k/split1/2xb8_BT/base_model_random_init_bbox_head.pth',
             novel_class_ids = [1],
             init_cfg=[
                 dict(
@@ -66,5 +66,6 @@ model = dict(
 #   tools/detection/misc/initialize_bbox_head.py
 # please refer to configs/detection/tfa/README.md for more details.
 
-load_from = ('work_dirs/tfa_sardet100k_split1_2xb8_BT/'
+load_from = ('work_dirs/tfa/sardet100k/split1/2xb8_BT/'
              'base_model_random_init_bbox_head.pth')
+work_dir = 'work_dirs/GFSDet/sardet100k/split1/2xb4_2shot_FT/'

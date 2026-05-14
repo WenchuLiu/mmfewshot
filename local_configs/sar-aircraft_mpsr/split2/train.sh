@@ -5,7 +5,7 @@
 bash tools/detection/dist_train_v2.sh local_configs/sar-aircraft_mpsr/split2/mpsr_sar-aircraft_split2_2xb4_BT.py 2
 
 # Step 2: Initialize bbox head
-python tools/detection/misc/initialize_bbox_head.py --src1 work_dirs/mpsr_sar-aircraft_split2_2xb4_BT/latest.pth --method random_init --save-dir work_dirs/mpsr_sar-aircraft_split2_2xb4_BT/ --sar_aircraft
+python tools/detection/misc/initialize_bbox_head.py --src1 work_dirs/mpsr/sar-aircraft/split2/2xb4_BT/latest.pth --method random_init --save-dir work_dirs/mpsr/sar-aircraft/split2/2xb4_BT/ --sar_aircraft --sar_aircraft_split 2
 
 # Step 3: Fine-tuning (6 shots)
 for shot in 1 2 3 5 10 30

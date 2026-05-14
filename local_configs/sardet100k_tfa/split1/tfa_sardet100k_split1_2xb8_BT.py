@@ -42,7 +42,7 @@ evaluation = dict(interval=total_images//(batch_size*gpu_number)*6,
 checkpoint_config = dict(interval=total_images//(batch_size*gpu_number))
 optimizer = dict(lr=0.02 * batch_size * gpu_number / 16)
 
-
 auto_scale_lr = dict(base_batch_size=2*8, enable=True)
 resume_from = \
-    'work_dirs/tfa_sardet100k_split1_2xb8_BT/latest.pth'
+    'work_dirs/tfa/sardet100k/split1/2xb8_BT/latest.pth'
+work_dir = 'work_dirs/tfa/sardet100k/split1/2xb8_BT/'

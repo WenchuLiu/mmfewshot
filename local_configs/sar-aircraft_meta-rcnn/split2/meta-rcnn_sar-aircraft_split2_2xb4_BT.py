@@ -57,3 +57,5 @@ checkpoint_config = dict(interval=total_images//(batch_size*gpu_number)*2)
 optimizer = dict(lr=0.005)  # 2 gpu 8 batch size
 
 # resume_from = 'work_dirs/tfa_sardet50k_2xb4_BT/latest.pth'
+
+work_dir = 'work_dirs/meta-rcnn/sar-aircraft/split2/2xb4_BT/'

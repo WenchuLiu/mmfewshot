@@ -95,17 +95,33 @@ LVIS_IDMAP = {v: i for i, v in enumerate(LVIS_ALL_CLASSES)}
 LVIS_TAR_SIZE = 1230
 # VOC config
 VOC_TAR_SIZE = 20
-# SARDet100K config
-SARDET100K_NOVEL_CLASSES = [1]
-SARDET100K_BASE_CLASSES = [0,2,3,4,5]
-SARDET100K_ALL_CLASSES = sorted(SARDET100K_BASE_CLASSES + SARDET100K_NOVEL_CLASSES)
-SARDET100K_IDMAP = {v: i for i, v in enumerate(SARDET100K_ALL_CLASSES)}
+# SARDet100K config (COCO category IDs)
+# Split1: base=ship/car/tank/bridge/harbor, novel=aircraft
+# Split2: base=aircraft/car/tank/bridge/harbor, novel=ship
+SARDET100K_NOVEL_CLASSES_SPLIT1 = [1]
+SARDET100K_BASE_CLASSES_SPLIT1 = [0, 2, 3, 4, 5]
+SARDET100K_ALL_CLASSES_SPLIT1 = sorted(SARDET100K_BASE_CLASSES_SPLIT1 +
+                                       SARDET100K_NOVEL_CLASSES_SPLIT1)
+SARDET100K_IDMAP_SPLIT1 = {v: i for i, v in enumerate(SARDET100K_ALL_CLASSES_SPLIT1)}
+SARDET100K_NOVEL_CLASSES_SPLIT2 = [0]
+SARDET100K_BASE_CLASSES_SPLIT2 = [1, 2, 3, 4, 5]
+SARDET100K_ALL_CLASSES_SPLIT2 = sorted(SARDET100K_BASE_CLASSES_SPLIT2 +
+                                       SARDET100K_NOVEL_CLASSES_SPLIT2)
+SARDET100K_IDMAP_SPLIT2 = {v: i for i, v in enumerate(SARDET100K_ALL_CLASSES_SPLIT2)}
 SARDET100K_TAR_SIZE = 6
-# SAR-AIRcraft config
-SARAIRCRAFT_NOVEL_CLASSES = [2]
-SARAIRCRAFT_BASE_CLASSES = [0,1,3,4,5,6]
-SARAIRCRAFT_ALL_CLASSES = sorted(SARAIRCRAFT_BASE_CLASSES + SARAIRCRAFT_NOVEL_CLASSES)
-SARAIRCRAFT_IDMAP = {v: i for i, v in enumerate(SARAIRCRAFT_ALL_CLASSES)}
+# SAR-AIRcraft config (COCO category IDs)
+# Split1: base=B787/A330/A220/A320orA321/other, novel=B737/ARJ21
+# Split2: base=B737/A330/A220/A320orA321/other, novel=B787/ARJ21
+SARAIRCRAFT_NOVEL_CLASSES_SPLIT1 = [0, 5]
+SARAIRCRAFT_BASE_CLASSES_SPLIT1 = [1, 2, 3, 4, 6]
+SARAIRCRAFT_ALL_CLASSES_SPLIT1 = sorted(SARAIRCRAFT_BASE_CLASSES_SPLIT1 +
+                                        SARAIRCRAFT_NOVEL_CLASSES_SPLIT1)
+SARAIRCRAFT_IDMAP_SPLIT1 = {v: i for i, v in enumerate(SARAIRCRAFT_ALL_CLASSES_SPLIT1)}
+SARAIRCRAFT_NOVEL_CLASSES_SPLIT2 = [1, 5]
+SARAIRCRAFT_BASE_CLASSES_SPLIT2 = [0, 2, 3, 4, 6]
+SARAIRCRAFT_ALL_CLASSES_SPLIT2 = sorted(SARAIRCRAFT_BASE_CLASSES_SPLIT2 +
+                                        SARAIRCRAFT_NOVEL_CLASSES_SPLIT2)
+SARAIRCRAFT_IDMAP_SPLIT2 = {v: i for i, v in enumerate(SARAIRCRAFT_ALL_CLASSES_SPLIT2)}
 SARAIRCRAFT_TAR_SIZE = 7
 
 def parse_args():
@@ -146,7 +162,24 @@ def parse_args():
     parser.add_argument(
         '--sardet100k', action='store_true', help='For SARDet100K models')
     parser.add_argument(
+        '--sardet100k_split',
+        type=int,
+        choices=[1, 2],
+        default=1,
+        help='Split number for SARDet100K (1 or 2)')
+    parser.add_argument(
         '--sar_aircraft', action='store_true', help='For SAR-AIRcraft models')
+    parser.add_argument(
+        '--sar_aircraft_split',
+        type=int,
+        choices=[1, 2],
+        default=1,
+        help='Split number for SAR-AIRcraft (1 or 2)')
+    parser.add_argument(
+        '--reg_class_agnostic',
+        action='store_true',
+        help='Use class-agnostic regression (bbox head reg output = 4 '
+        'instead of num_classes * 4)')
     return parser.parse_args()
 
 
@@ -170,50 +203,65 @@ def random_init_checkpoint(param_name, is_weight, tar_size, checkpoint, args):
         torch.nn.init.normal_(new_weight, 0, 0.01)
     else:
         new_weight = torch.zeros(tar_size)
+
+    # For class-agnostic regression, pretrained weights already apply to all
+    # classes. No expansion needed — keep as-is.
+    if 'fc_reg' in param_name and pretrained_weight.size(0) == tar_size:
+        new_weight = pretrained_weight.clone()
+        checkpoint['state_dict'][weight_name] = new_weight
+        print(f'Keep {weight_name} as-is (class-agnostic) with size {new_weight.size()}')
+        return
+
     if args.coco or args.lvis:
         print('args.coco or args.lvis')
         BASE_CLASSES = COCO_BASE_CLASSES if args.coco else LVIS_BASE_CLASSES
         IDMAP = COCO_IDMAP if args.coco else LVIS_IDMAP
         for i, c in enumerate(BASE_CLASSES):
             idx = i if args.coco else c
-            if 'fc_cls' in param_name:
-                new_weight[IDMAP[c]] = pretrained_weight[idx]
-            else:
-                new_weight[IDMAP[c] * 4:(IDMAP[c] + 1) * 4] = \
-                    pretrained_weight[idx * 4:(idx + 1) * 4]
-    elif args.sardet100k:
-        print('args.sardet100k')
-        BASE_CLASSES = SARDET100K_BASE_CLASSES
-        IDMAP = SARDET100K_IDMAP
-        for i, c in enumerate(BASE_CLASSES):
-            idx = i if args.sardet100k else c
-            
-            # 1. 处理分类层 (fc_cls)
             if 'fc_cls' in param_name or 'fc_meta' in param_name:
                 new_weight[IDMAP[c]] = pretrained_weight[idx]
-            
-            # 2. 处理回归层 (fc_reg)
             else:
-                # 【关键修复】检查源权重是否为 Class Agnostic (只有4行)
                 if pretrained_weight.size(0) == 4:
-                    # 如果源模型是 Agnostic，所有类别都共用这 4 个权重
-                    # 将源模型的 0-4 复制到目标模型的对应位置
                     new_weight[IDMAP[c] * 4:(IDMAP[c] + 1) * 4] = pretrained_weight[:]
                 else:
-                    # 如果源模型是 Class Specific，按索引正常复制
+                    new_weight[IDMAP[c] * 4:(IDMAP[c] + 1) * 4] = \
+                        pretrained_weight[idx * 4:(idx + 1) * 4]
+    elif args.sardet100k:
+        print(f'args.sardet100k split{args.sardet100k_split}')
+        if args.sardet100k_split == 1:
+            BASE_CLASSES = SARDET100K_BASE_CLASSES_SPLIT1
+            IDMAP = SARDET100K_IDMAP_SPLIT1
+        else:
+            BASE_CLASSES = SARDET100K_BASE_CLASSES_SPLIT2
+            IDMAP = SARDET100K_IDMAP_SPLIT2
+        for i, c in enumerate(BASE_CLASSES):
+            idx = i
+            if 'fc_cls' in param_name or 'fc_meta' in param_name:
+                new_weight[IDMAP[c]] = pretrained_weight[idx]
+            else:
+                if pretrained_weight.size(0) == 4:
+                    new_weight[IDMAP[c] * 4:(IDMAP[c] + 1) * 4] = pretrained_weight[:]
+                else:
                     new_weight[IDMAP[c] * 4:(IDMAP[c] + 1) * 4] = \
                         pretrained_weight[idx * 4:(idx + 1) * 4]
     elif args.sar_aircraft:
-        print('args.sar_aircraft')
-        BASE_CLASSES = SARAIRCRAFT_BASE_CLASSES
-        IDMAP = SARAIRCRAFT_IDMAP
+        print(f'args.sar_aircraft split{args.sar_aircraft_split}')
+        if args.sar_aircraft_split == 1:
+            BASE_CLASSES = SARAIRCRAFT_BASE_CLASSES_SPLIT1
+            IDMAP = SARAIRCRAFT_IDMAP_SPLIT1
+        else:
+            BASE_CLASSES = SARAIRCRAFT_BASE_CLASSES_SPLIT2
+            IDMAP = SARAIRCRAFT_IDMAP_SPLIT2
         for i, c in enumerate(BASE_CLASSES):
-            idx = i if args.sar_aircraft else c
-            if 'fc_cls' in param_name:
+            idx = i
+            if 'fc_cls' in param_name or 'fc_meta' in param_name:
                 new_weight[IDMAP[c]] = pretrained_weight[idx]
             else:
-                new_weight[IDMAP[c] * 4:(IDMAP[c] + 1) * 4] = \
-                    pretrained_weight[idx * 4:(idx + 1) * 4]
+                if pretrained_weight.size(0) == 4:
+                    new_weight[IDMAP[c] * 4:(IDMAP[c] + 1) * 4] = pretrained_weight[:]
+                else:
+                    new_weight[IDMAP[c] * 4:(IDMAP[c] + 1) * 4] = \
+                        pretrained_weight[idx * 4:(idx + 1) * 4]
     else:
         new_weight[:prev_cls] = pretrained_weight[:prev_cls]
     if 'fc_cls' in param_name or 'fc_meta' in param_name:
@@ -236,23 +284,62 @@ def combine_checkpoints(param_name, is_weight, tar_size, checkpoint,
     weight_name = param_name + ('.weight' if is_weight else '.bias')
     pretrained_weight = checkpoint['state_dict'][weight_name]
     prev_cls = pretrained_weight.size(0)
-    if 'fc_cls' in param_name:
+    if 'fc_cls' in param_name or 'fc_meta' in param_name:
         prev_cls -= 1
     if is_weight:
         feat_size = pretrained_weight.size(1)
         new_weight = torch.rand((tar_size, feat_size))
     else:
         new_weight = torch.zeros(tar_size)
+
+    # For class-agnostic regression, keep pretrained weights as-is
+    if 'fc_reg' in param_name and pretrained_weight.size(0) == tar_size:
+        new_weight = pretrained_weight.clone()
+        checkpoint['state_dict'][weight_name] = new_weight
+        return checkpoint
+
     if args.coco or args.lvis:
         BASE_CLASSES = COCO_BASE_CLASSES if args.coco else LVIS_BASE_CLASSES
         IDMAP = COCO_IDMAP if args.coco else LVIS_IDMAP
         for i, c in enumerate(BASE_CLASSES):
             idx = i if args.coco else c
-            if 'fc_cls' in param_name:
+            if 'fc_cls' in param_name or 'fc_meta' in param_name:
                 new_weight[IDMAP[c]] = pretrained_weight[idx]
             else:
                 new_weight[IDMAP[c] * 4:(IDMAP[c] + 1) * 4] = \
                     pretrained_weight[idx * 4:(idx + 1) * 4]
+    elif args.sardet100k:
+        if args.sardet100k_split == 1:
+            BASE_CLASSES = SARDET100K_BASE_CLASSES_SPLIT1
+            IDMAP = SARDET100K_IDMAP_SPLIT1
+        else:
+            BASE_CLASSES = SARDET100K_BASE_CLASSES_SPLIT2
+            IDMAP = SARDET100K_IDMAP_SPLIT2
+        for i, c in enumerate(BASE_CLASSES):
+            if 'fc_cls' in param_name or 'fc_meta' in param_name:
+                new_weight[IDMAP[c]] = pretrained_weight[i]
+            else:
+                if pretrained_weight.size(0) == 4:
+                    new_weight[IDMAP[c] * 4:(IDMAP[c] + 1) * 4] = pretrained_weight[:]
+                else:
+                    new_weight[IDMAP[c] * 4:(IDMAP[c] + 1) * 4] = \
+                        pretrained_weight[i * 4:(i + 1) * 4]
+    elif args.sar_aircraft:
+        if args.sar_aircraft_split == 1:
+            BASE_CLASSES = SARAIRCRAFT_BASE_CLASSES_SPLIT1
+            IDMAP = SARAIRCRAFT_IDMAP_SPLIT1
+        else:
+            BASE_CLASSES = SARAIRCRAFT_BASE_CLASSES_SPLIT2
+            IDMAP = SARAIRCRAFT_IDMAP_SPLIT2
+        for i, c in enumerate(BASE_CLASSES):
+            if 'fc_cls' in param_name or 'fc_meta' in param_name:
+                new_weight[IDMAP[c]] = pretrained_weight[i]
+            else:
+                if pretrained_weight.size(0) == 4:
+                    new_weight[IDMAP[c] * 4:(IDMAP[c] + 1) * 4] = pretrained_weight[:]
+                else:
+                    new_weight[IDMAP[c] * 4:(IDMAP[c] + 1) * 4] = \
+                        pretrained_weight[i * 4:(i + 1) * 4]
     else:
         new_weight[:prev_cls] = pretrained_weight[:prev_cls]
 
@@ -261,15 +348,51 @@ def combine_checkpoints(param_name, is_weight, tar_size, checkpoint,
         NOVEL_CLASSES = COCO_NOVEL_CLASSES if args.coco else LVIS_NOVEL_CLASSES
         IDMAP = COCO_IDMAP if args.coco else LVIS_IDMAP
         for i, c in enumerate(NOVEL_CLASSES):
-            if 'fc_cls' in param_name:
+            if 'fc_cls' in param_name or 'fc_meta' in param_name:
                 new_weight[IDMAP[c]] = checkpoint2_weight[i]
             else:
                 new_weight[IDMAP[c] * 4:(IDMAP[c] + 1) * 4] = \
                     checkpoint2_weight[i * 4:(i + 1) * 4]
-        if 'fc_cls' in param_name:
+        if 'fc_cls' in param_name or 'fc_meta' in param_name:
+            new_weight[-1] = pretrained_weight[-1]
+    elif args.sardet100k:
+        if args.sardet100k_split == 1:
+            NOVEL_CLASSES = SARDET100K_NOVEL_CLASSES_SPLIT1
+            IDMAP = SARDET100K_IDMAP_SPLIT1
+        else:
+            NOVEL_CLASSES = SARDET100K_NOVEL_CLASSES_SPLIT2
+            IDMAP = SARDET100K_IDMAP_SPLIT2
+        for i, c in enumerate(NOVEL_CLASSES):
+            if 'fc_cls' in param_name or 'fc_meta' in param_name:
+                new_weight[IDMAP[c]] = checkpoint2_weight[i]
+            else:
+                if checkpoint2_weight.size(0) == 4:
+                    new_weight[IDMAP[c] * 4:(IDMAP[c] + 1) * 4] = checkpoint2_weight[:]
+                else:
+                    new_weight[IDMAP[c] * 4:(IDMAP[c] + 1) * 4] = \
+                        checkpoint2_weight[i * 4:(i + 1) * 4]
+        if 'fc_cls' in param_name or 'fc_meta' in param_name:
+            new_weight[-1] = pretrained_weight[-1]
+    elif args.sar_aircraft:
+        if args.sar_aircraft_split == 1:
+            NOVEL_CLASSES = SARAIRCRAFT_NOVEL_CLASSES_SPLIT1
+            IDMAP = SARAIRCRAFT_IDMAP_SPLIT1
+        else:
+            NOVEL_CLASSES = SARAIRCRAFT_NOVEL_CLASSES_SPLIT2
+            IDMAP = SARAIRCRAFT_IDMAP_SPLIT2
+        for i, c in enumerate(NOVEL_CLASSES):
+            if 'fc_cls' in param_name or 'fc_meta' in param_name:
+                new_weight[IDMAP[c]] = checkpoint2_weight[i]
+            else:
+                if checkpoint2_weight.size(0) == 4:
+                    new_weight[IDMAP[c] * 4:(IDMAP[c] + 1) * 4] = checkpoint2_weight[:]
+                else:
+                    new_weight[IDMAP[c] * 4:(IDMAP[c] + 1) * 4] = \
+                        checkpoint2_weight[i * 4:(i + 1) * 4]
+        if 'fc_cls' in param_name or 'fc_meta' in param_name:
             new_weight[-1] = pretrained_weight[-1]
     else:
-        if 'fc_cls' in param_name:
+        if 'fc_cls' in param_name or 'fc_meta' in param_name:
             new_weight[prev_cls:-1] = checkpoint2_weight[:-1]
             new_weight[-1] = pretrained_weight[-1]
         else:
@@ -285,6 +408,14 @@ def reset_checkpoint(checkpoint):
         del checkpoint['optimizer']
     if 'iteration' in checkpoint:
         checkpoint['iteration'] = 0
+
+
+def get_target_size(param_name, tar_size, args):
+    if 'fc_cls' in param_name or 'fc_meta' in param_name:
+        return tar_size + (1 if 'fc_cls' in param_name else 0)
+    if args.reg_class_agnostic:
+        return 4
+    return tar_size * 4
 
 
 def main():
@@ -318,17 +449,15 @@ def main():
                 del checkpoint['state_dict'][param_name + '.bias']
     elif args.method == 'combine':
         checkpoint2 = torch.load(args.src2)
-        tar_sizes = [TAR_SIZE + 1, TAR_SIZE * 4]
-        for idx, (param_name,
-                  tar_size) in enumerate(zip(args.param_name, tar_sizes)):
+        for param_name in args.param_name:
+            tar_size = get_target_size(param_name, TAR_SIZE, args)
             combine_checkpoints(param_name, True, tar_size, checkpoint,
                                 checkpoint2, args)
             combine_checkpoints(param_name, False, tar_size, checkpoint,
                                 checkpoint2, args)
     elif args.method == 'random_init':
-        tar_sizes = [TAR_SIZE + 1, TAR_SIZE * 4]
-        for idx, (param_name,
-                  tar_size) in enumerate(zip(args.param_name, tar_sizes)):
+        for param_name in args.param_name:
+            tar_size = get_target_size(param_name, TAR_SIZE, args)
             random_init_checkpoint(param_name, True, tar_size, checkpoint,
                                    args)
             random_init_checkpoint(param_name, False, tar_size, checkpoint,

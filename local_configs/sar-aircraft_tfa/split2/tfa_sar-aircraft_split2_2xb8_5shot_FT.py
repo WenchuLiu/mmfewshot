@@ -14,11 +14,17 @@ data = dict(
     samples_per_gpu=8,
     workers_per_gpu=4,
     train=dict(
-        type='FewShotSARAircraftDefaultDataset',
-        ann_cfg=[dict(method='TFA', setting=f'{num_shots}SHOT')],
+        type='FewShotSARAircraftDataset',
+        ann_cfg=[dict(type='ann_file', ann_file=f'data/SAR-Aircraft-1.0/split2/ft_{num_shots}shot_trainval.json')],
         num_novel_shots=num_shots,
         num_base_shots=num_shots,
-        classes='ALL_CLASSES_SPLIT2'))
+        classes='ALL_CLASSES_SPLIT2'),
+    val=dict(
+        ann_cfg=[dict(type='ann_file', ann_file='data/SAR-Aircraft-1.0/split2/ft_test.json')]
+    ),
+    test=dict(
+        ann_cfg=[dict(type='ann_file', ann_file='data/SAR-Aircraft-1.0/split2/ft_test.json')]
+    ))
 
 evaluation = dict(interval=6000)
 checkpoint_config = dict(interval=6000)
@@ -29,5 +35,6 @@ model = dict(roi_head=dict(bbox_head=dict(num_classes=num_classes)))
 # base model needs to be initialized with following script:
 #   tools/detection/misc/initialize_bbox_head.py
 
-load_from = ('work_dirs/tfa_sar-aircraft_split2_2xb8_BT/'
+load_from = ('work_dirs/tfa/sar-aircraft/split2/2xb8_BT/'
              'base_model_random_init_bbox_head.pth')
+work_dir = 'work_dirs/tfa/sar-aircraft/split2/2xb8_5shot_FT/'

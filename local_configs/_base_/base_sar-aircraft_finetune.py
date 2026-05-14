@@ -39,7 +39,7 @@ data = dict(
         ann_cfg=[
             dict(
                 type='ann_file',
-                ann_file=data_root + 'Annotations/trainval.json')
+                ann_file=data_root + 'split1/base_trainval.json')
         ],
         img_prefix=data_root+'JPEGImages/',
         pipeline=train_pipeline,
@@ -49,7 +49,7 @@ data = dict(
         ann_cfg=[
             dict(
                 type='ann_file',
-                ann_file = data_root + 'Annotations/test.json')
+                ann_file = data_root + 'split1/base_test.json')
         ],
         img_prefix=data_root+'JPEGImages/',
         pipeline=test_pipeline,
@@ -59,7 +59,7 @@ data = dict(
         ann_cfg=[
             dict(
                 type='ann_file',
-                ann_file=data_root + 'Annotations/test.json')
+                ann_file=data_root + 'split1/base_test.json')
         ],
         img_prefix=data_root+'JPEGImages/',
         pipeline=test_pipeline,

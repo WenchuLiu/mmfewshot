@@ -390,6 +390,11 @@ class FewShotSARAircraftDataset(BaseFewShotDataset, CocoDataset):
         Returns:
             dict[str, float]: COCO style evaluation metric.
         """
+        if class_splits is None and self.split_id is not None:
+            class_splits = [
+                f'BASE_CLASSES_SPLIT{self.split_id}',
+                f'NOVEL_CLASSES_SPLIT{self.split_id}'
+            ]
         if class_splits is not None:
             for k in class_splits:
                 assert k in self.SPLIT.keys(), 'please define classes split.'
@@ -666,13 +671,13 @@ class FewShotSARAircraftDefaultDataset(FewShotSARAircraftDataset):
     # }
 
     SARAircraft_benchmark = {
-        f'{shot}SHOT': [
+        f'SPLIT{split}_{shot}SHOT': [
             dict(
                 type='ann_file',
-                ann_file=f'data/SAR-Aircraft-1.0/split1/'
+                ann_file=f'data/SAR-Aircraft-1.0/split{split}/'
                 f'ft_{shot}shot_trainval.json')
         ]
-        for shot in [1, 2, 3, 5, 10, 30]
+        for shot in [1, 2, 3, 5, 10, 30] for split in [1, 2]
     }
 
     # pre-defined annotation config for model reproducibility
@@ -689,7 +694,8 @@ class FewShotSARAircraftDefaultDataset(FewShotSARAircraftDataset):
         },
         MPSR=SARAircraft_benchmark,
         MetaRCNN=SARAircraft_benchmark,
-        FSDetView=SARAircraft_benchmark)
+        FSDetView=SARAircraft_benchmark,
+        VFA=SARAircraft_benchmark)
 
     def __init__(self, ann_cfg: List[Dict], **kwargs) -> None:
         super().__init__(ann_cfg=ann_cfg, **kwargs)

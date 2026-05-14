@@ -14,10 +14,9 @@ data = dict(
     workers_per_gpu=8,
     train=dict(
         type='FewShotSARDet100KDefaultDataset',
-        ann_cfg=[dict(method='FSCE', setting=f'{num_shots}SHOT')],
+        ann_cfg=[dict(method='FSCE', setting=f'SPLIT1_{num_shots}SHOT')],
         num_novel_shots=num_shots,
         num_base_shots=num_shots))
-
 
 # evaluation = dict(interval=5000)
 # checkpoint_config = dict(interval=5000)
@@ -30,7 +29,6 @@ data = dict(
 #         rcnn=dict(
 #             assigner=dict(pos_iou_thr=0.5, neg_iou_thr=0.5, min_pos_iou=0.5))))
 
-
 evaluation = dict(interval=6000)
 checkpoint_config = dict(interval=6000)
 optimizer = dict(lr=0.001)
@@ -42,6 +40,6 @@ model = dict(
         rcnn=dict(
             assigner=dict(pos_iou_thr=0.5, neg_iou_thr=0.5, min_pos_iou=0.5))))
 
-
-load_from = ('work_dirs/tfa_sardet100k_split1_2xb8_BT/'
+load_from = ('work_dirs/tfa/sardet100k/split1/2xb8_BT/'
              'base_model_random_init_bbox_head.pth')
+work_dir = 'work_dirs/fsce/sardet100k/split1/2xb8_3shot_FT/'

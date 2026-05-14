@@ -13,7 +13,7 @@ data = dict(
     workers_per_gpu=4,
     train=dict(
         type='FewShotSARAircraftDefaultDataset',
-        ann_cfg=[dict(method='TFA', setting=f'{num_shots}SHOT')],
+        ann_cfg=[dict(method='TFA', setting=f'SPLIT1_{num_shots}SHOT')],
         num_novel_shots=num_shots,
         num_base_shots=num_shots))
 
@@ -44,7 +44,7 @@ model = dict(
                 loss_novel_margin_weight=1.0,
                 loss_neg_margin_weight=1.0,
                 power_weight=4.0),
-            base_cpt = 'work_dirs/tfa_sar-aircraft_split1_2xb8_BT/base_model_random_init_bbox_head.pth',
+            base_cpt = 'work_dirs/tfa/sar-aircraft/split1/2xb8_BT/base_model_random_init_bbox_head.pth',
             novel_class_ids = [0, 5],
             init_cfg=[
                 dict(
@@ -64,5 +64,6 @@ model = dict(
 # base model needs to be initialized with following script:
 #   tools/detection/misc/initialize_bbox_head.py
 
-load_from = ('work_dirs/tfa_sar-aircraft_split1_2xb8_BT/'
+load_from = ('work_dirs/tfa/sar-aircraft/split1/2xb8_BT/'
              'base_model_random_init_bbox_head.pth')
+work_dir = 'work_dirs/GFSDet/sar-aircraft/split1/2xb8_3shot_FT/'

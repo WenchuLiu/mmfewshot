@@ -1,7 +1,7 @@
 _base_ = [
     '../../_base_/few_shot_sardet100k_twobranch.py',
     '../../_base_/schedule.py',
-    '../../_base_/../mpsr_r101_fpn.py',
+    '../mpsr_r101_fpn.py',
     '../../_base_/default_runtime.py'
 ]
 
@@ -41,7 +41,6 @@ evaluation = dict(interval=total_images//(batch_size*gpu_number)*6,
 checkpoint_config = dict(interval=total_images//(batch_size*gpu_number))
 optimizer = dict(lr=0.02 * batch_size * gpu_number / 16)
 
+resume_from = 'work_dirs/tfa/sardet100k/split1/2xb8_BT/latest.pth'
 
-
-resume_from
-    'work_dirs/tfa_sardet100k_split1_2xb8_BT/latest.pth'
+work_dir = 'work_dirs/mpsr/sardet100k/split1/2xb2_BT/'

@@ -19,7 +19,7 @@ data = dict(
     train=dict(
         dataset=dict(
             type='FewShotSARDet100KDefaultDataset',
-            ann_cfg=[dict(method='MPSR', setting=f'{num_shots}SHOT')],
+            ann_cfg=[dict(method='MPSR', setting=f'SPLIT1_{num_shots}SHOT')],
             num_novel_shots=num_shots,
             num_base_shots=num_shots)))
 
@@ -47,7 +47,8 @@ lr_config = dict(
 runner = dict(max_iters=max_iters)
 
 load_from = \
-    'work_dirs/mpsr_sardet100k_split1_2xb2_BT/base_model_random_init_bbox_head.pth'
+    'work_dirs/mpsr/sardet100k/split1/2xb2_BT/base_model_random_init_bbox_head.pth'
+work_dir = 'work_dirs/mpsr/sardet100k/split1/2xb2_3shot_FT/'
 model = dict(
     roi_head=dict(
         bbox_head=dict(

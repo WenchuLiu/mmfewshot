@@ -70,5 +70,4 @@ data = dict(
 evaluation = dict(
     interval=4000,
     metric='bbox',
-    classwise=True,
-    class_splits=['BASE_CLASSES_SPLIT1', 'NOVEL_CLASSES_SPLIT1'])
+    classwise=True)
