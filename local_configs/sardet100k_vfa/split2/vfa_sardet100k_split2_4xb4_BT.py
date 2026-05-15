@@ -15,10 +15,7 @@ num_classes = 5
 
 model = dict(
     backbone=dict(
-        depth=101,
-        init_cfg=dict(
-            type='Pretrained',
-            checkpoint='open-mmlab://detectron2/resnet101_caffe')),
+        depth=101),
     roi_head=dict(
         bbox_head=dict(
             num_classes=num_classes,

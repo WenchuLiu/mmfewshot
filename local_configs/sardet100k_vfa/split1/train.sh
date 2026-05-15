@@ -2,7 +2,7 @@
 # sardet100k_vfa split1 training script
 
 # Step 1: Base Training
-bash tools/detection/dist_train_v2.sh local_configs/sardet100k_vfa/split1/vfa_sardet100k_split1_4xb4_BT.py 4
+bash tools/detection/dist_train_v2.sh local_configs/sardet100k_vfa/split1/vfa_sardet100k_split1_4xb4_BT.py 2
 
 # Step 2: Initialize bbox head, bbox regressor, and meta classifier for all classes
 python tools/detection/misc/initialize_bbox_head.py \
