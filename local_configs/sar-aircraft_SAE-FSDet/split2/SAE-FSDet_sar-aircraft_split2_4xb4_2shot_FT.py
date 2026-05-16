@@ -156,13 +156,18 @@ data = dict(
     val=dict(classes=('Boeing737', 'A330', 'A220', 'A320orA321', 'other', 'Boeing787', 'ARJ21')),
     test=dict(classes=('Boeing737', 'A330', 'A220', 'A320orA321', 'other', 'Boeing787', 'ARJ21')))
 evaluation = dict(
-    interval=1000,
+    interval=27,
     metric='bbox',
     classwise=True,
     class_splits=['BASE_CLASSES_SPLIT2', 'NOVEL_CLASSES_SPLIT2'])
-checkpoint_config = dict(interval=1000)
-optimizer = dict(type='SGD', lr=0.0005, momentum=0.9, weight_decay=0.0001)
-lr_config = dict(warmup_iters=100, step=[1600])
-runner = dict(max_iters=2000)
+checkpoint_config = dict(interval=27)
+optimizer = dict(type='SGD', lr=0.001, momentum=0.9, weight_decay=0.0001)
+lr_config = dict(
+    policy='step',
+    warmup='linear',
+    warmup_iters=100,
+    warmup_ratio=0.001,
+    step=[95])
+runner = dict(type='EpochBasedRunner', max_epochs=108)
 load_from = 'work_dirs/SAE-FSDet/sar-aircraft/split2/4xb4_BT/latest.pth'
 work_dir = 'work_dirs/SAE-FSDet/sar-aircraft/split2/4xb4_2shot_FT/'

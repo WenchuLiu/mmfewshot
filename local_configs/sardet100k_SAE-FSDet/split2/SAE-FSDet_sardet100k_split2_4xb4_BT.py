@@ -6,11 +6,7 @@ _base_ = [
 ]
 
 split_id = 2
-total_images = 79625
-total_epoch = 12
-step_epoch = 8
 batch_size = 4
-gpu_number = 4
 num_classes = 5
 
 # Override classes and ann paths for split2.
@@ -114,12 +110,12 @@ model.update(
         bbox_head=dict(reg_class_agnostic=True, num_classes=num_classes)))
 
 lr_config = dict(
-    warmup_iters=500,
-    step=[
-        total_images // (batch_size * gpu_number) * step_epoch,
-        total_images // (batch_size * gpu_number) * (total_epoch - 1)
-    ])
-runner = dict(max_iters=total_images // (batch_size * gpu_number) * total_epoch)
+    policy='step',
+    warmup='linear',
+    warmup_iters=200,
+    warmup_ratio=0.001,
+    step=[12, 16])
+runner = dict(type='EpochBasedRunner', max_epochs=18)
 data = dict(samples_per_gpu=batch_size, workers_per_gpu=4,
     train=dict(
         classes='BASE_CLASSES_SPLIT2',
@@ -133,10 +129,10 @@ data = dict(samples_per_gpu=batch_size, workers_per_gpu=4,
         ann_cfg=[dict(type='ann_file', ann_file='data/sardet100k/split2/FewShot_test.json')],
         img_prefix='data/sardet100k/JPEGImages/test/'))
 evaluation = dict(
-    interval=total_images // (batch_size * gpu_number) * 6,
+    interval=6,
     metric='bbox',
     classwise=True)
-checkpoint_config = dict(interval=total_images // (batch_size * gpu_number) * 1)
+checkpoint_config = dict(interval=2)
 optimizer = dict(type='SGD', lr=0.01, momentum=0.9, weight_decay=0.0001)
 
 work_dir = 'work_dirs/SAE-FSDet/sardet100k/split2/4xb4_BT/'
