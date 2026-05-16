@@ -2,7 +2,7 @@
 # sar-aircraft_vfa split2 training script
 
 # Step 1: Base Training
-bash tools/detection/dist_train_v2.sh local_configs/sar-aircraft_vfa/split2/vfa_sar-aircraft_split2_4xb4_BT.py 2
+bash tools/detection/dist_train_v2.sh local_configs/sar-aircraft_vfa/split2/vfa_sar-aircraft_split2_4xb4_BT.py 4
 
 # Step 2: Initialize bbox head, bbox regressor, and meta classifier for all classes
 python tools/detection/misc/initialize_bbox_head.py \
@@ -17,5 +17,5 @@ for shot in 1 2 3 5 10 30
 do
     CONFIG="local_configs/sar-aircraft_vfa/split2/vfa_sar-aircraft_split2_4xb4_${shot}shot_FT.py"
     echo ">>> Running Task: sar-aircraft_vfa/split2 SHOT_NUM=${shot} ..."
-    SHOT_NUM=$shot bash tools/detection/dist_train_v2.sh "$CONFIG" 2
+    SHOT_NUM=$shot bash tools/detection/dist_train_v2.sh "$CONFIG" 4
 done

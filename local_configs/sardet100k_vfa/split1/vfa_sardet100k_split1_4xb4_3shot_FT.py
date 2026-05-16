@@ -21,7 +21,7 @@ evaluation = dict(
     interval=2400,
     class_splits=['BASE_CLASSES_SPLIT1', 'NOVEL_CLASSES_SPLIT1'])
 checkpoint_config = dict(interval=2400)
-optimizer = dict(lr=0.00025)
+optimizer = dict(lr=0.0005)
 lr_config = dict(warmup=None)
 runner = dict(max_iters=2400)
 load_from =     'work_dirs/vfa/sardet100k/split1/4xb4_BT/base_model_random_init_bbox_head.pth'
