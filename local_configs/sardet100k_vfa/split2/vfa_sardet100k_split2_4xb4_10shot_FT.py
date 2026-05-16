@@ -18,12 +18,12 @@ data = dict(
             num_base_shots=num_shots)),
     model_init=dict(classes='ALL_CLASSES_SPLIT2'))
 evaluation = dict(
-    interval=1000,
+    interval=4000,
     class_splits=['BASE_CLASSES_SPLIT2', 'NOVEL_CLASSES_SPLIT2'])
-checkpoint_config = dict(interval=200)
-optimizer = dict(lr=0.0005)
+checkpoint_config = dict(interval=4000)
+optimizer = dict(lr=0.00025)
 lr_config = dict(warmup=None)
-runner = dict(max_iters=1000)
+runner = dict(max_iters=4000)
 load_from =     'work_dirs/vfa/sardet100k/split2/4xb4_BT/base_model_random_init_bbox_head.pth'
 work_dir = 'work_dirs/vfa/sardet100k/split2/4xb4_10shot_FT/'
 

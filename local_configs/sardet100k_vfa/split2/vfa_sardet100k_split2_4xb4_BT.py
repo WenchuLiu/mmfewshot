@@ -10,7 +10,7 @@ total_images = 79625
 total_epoch = 12
 step_epoch = 8
 batch_size = 4
-gpu_number = 4
+gpu_number = 2
 num_classes = 5
 
 model = dict(
@@ -45,6 +45,6 @@ evaluation = dict(
     metric='bbox',
     classwise=True)
 checkpoint_config = dict(interval=total_images // (batch_size * gpu_number) * 1)
-optimizer = dict(lr=0.0025)
+optimizer = dict(lr=0.00125)
 
 work_dir = 'work_dirs/vfa/sardet100k/split2/4xb4_BT/'

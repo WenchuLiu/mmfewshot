@@ -6,7 +6,7 @@ _base_ = [
 
 num_shots = 1
 num_classes = 7
-
+novel_class_ids = [0, 5]
 # classes splits are predefined in FewShotSARAircraftDataset
 data = dict(
     samples_per_gpu=8,
@@ -18,7 +18,7 @@ data = dict(
         num_base_shots=num_shots))
 
 evaluation = dict(interval=6000)
-checkpoint_config = dict(interval=6000)
+checkpoint_config = dict(interval=1000000)
 optimizer = dict(lr=0.001)
 optimizer_config=dict(_delete_=True, grad_clip=dict(max_norm=20, norm_type=2))
 lr_config = dict(warmup_iters=100, step=[4500])
@@ -46,7 +46,7 @@ model = dict(
                 power_weight=4.0,
                 novel_class_ids=novel_class_ids),
             base_cpt = 'work_dirs/tfa/sar-aircraft/split1/2xb8_BT/base_model_random_init_bbox_head.pth',
-            novel_class_ids = [0, 5],
+            novel_class_ids=novel_class_ids,
             init_cfg=[
                 dict(
                     type='Caffe2Xavier',

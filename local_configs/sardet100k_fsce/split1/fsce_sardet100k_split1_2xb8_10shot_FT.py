@@ -40,6 +40,6 @@ model = dict(
         rcnn=dict(
             assigner=dict(pos_iou_thr=0.5, neg_iou_thr=0.5, min_pos_iou=0.5))))
 
-load_from = ('work_dirs/tfa/sardet100k/split1/2xb8_BT/'
+load_from = ('work_dirs/tfa/sardet100k/split1/4xb4_BT/'
              'base_model_random_init_bbox_head.pth')
 work_dir = 'work_dirs/fsce/sardet100k/split1/2xb8_10shot_FT/'
