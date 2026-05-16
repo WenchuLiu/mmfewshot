@@ -6,7 +6,7 @@ _base_ = [
 ]
 
 split_id = 1
-num_shots = 2
+num_shots = 1
 num_base_classes = 5
 num_novel_classes = 1
 num_classes = 6
@@ -145,8 +145,8 @@ model.update(
             ])))
 
 data = dict(
-    samples_per_gpu=4,
-    workers_per_gpu=4,
+    samples_per_gpu=2,
+    workers_per_gpu=2,
     train=dict(
         type='FewShotSARDet100KDefaultDataset',
         ann_cfg=[dict(method='SAE_FSDet', setting=f'SPLIT1_{num_shots}SHOT')],
@@ -161,13 +161,14 @@ evaluation = dict(
     classwise=True,
     class_splits=['BASE_CLASSES_SPLIT1', 'NOVEL_CLASSES_SPLIT1'])
 checkpoint_config = dict(interval=27)
-optimizer = dict(type='SGD', lr=0.001, momentum=0.9, weight_decay=0.0001)
+optimizer = dict(type='SGD', lr=0.004, momentum=0.9, weight_decay=0.0001)
 lr_config = dict(
+    _delete_=True,
     policy='step',
     warmup='linear',
     warmup_iters=100,
     warmup_ratio=0.001,
     step=[95])
-runner = dict(type='EpochBasedRunner', max_epochs=108)
-load_from = 'work_dirs/SAE-FSDet/sardet100k/split1/4xb4_BT/latest.pth'
-work_dir = 'work_dirs/SAE-FSDet/sardet100k/split1/4xb4_2shot_FT/'
+runner = dict(_delete_=True, type='EpochBasedRunner', max_epochs=108)
+load_from = 'work_dirs/SAE-FSDet/sardet100k/split1/4xb2_BT/base_model_random_init_bbox_head.pth'
+work_dir = 'work_dirs/SAE-FSDet/sardet100k/split1/4xb2_1shot_FT/'

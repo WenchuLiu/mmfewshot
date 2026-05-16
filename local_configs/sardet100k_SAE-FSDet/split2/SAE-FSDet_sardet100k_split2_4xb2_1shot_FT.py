@@ -1,13 +1,15 @@
 _base_ = [
-    '../../_base_/base_sar-aircraft_finetune.py',
+    '../../_base_/few_shot_sardet100k_finetune.py',
     '../../_base_/schedule.py',
     '../../_base_/faster_rcnn_r50_caffe_fpn.py',
     '../../_base_/default_runtime.py'
 ]
 
 split_id = 2
-batch_size = 4
-num_classes = 5
+num_shots = 1
+num_base_classes = 5
+num_novel_classes = 1
+num_classes = 6
 
 rpn_weight = 0.7
 
@@ -17,6 +19,7 @@ model = dict(
     rpn_head=dict(
         _delete_=True,
         type='GradualRPNHead',
+        aug_proposal=True,
         num_stages=2,
         stages=[
             dict(
@@ -105,31 +108,67 @@ model = dict(
 
 
 model.update(
+    frozen_parameters=['backbone'],
     roi_head=dict(
-        bbox_head=dict(reg_class_agnostic=True, num_classes=num_classes)))
+        type='LCCRoIHead',
+        bbox_head=dict(
+            _delete_=True,
+            type='LCCBoxHead',
+            use_dropout=False,
+            in_channels=256,
+            fc_out_channels=1024,
+            roi_feat_size=7,
+            num_shared_fcs=2,
+            num_classes=num_base_classes,
+            num_novel_classes=num_novel_classes,
+            bbox_coder=dict(
+                type='DeltaXYWHBBoxCoder',
+                target_means=[0.0, 0.0, 0.0, 0.0],
+                target_stds=[0.1, 0.1, 0.2, 0.2]),
+            reg_class_agnostic=True,
+            loss_cls=dict(
+                type='LCCFocalLoss',
+                num_base_classes=num_base_classes,
+                num_novel_classes=num_novel_classes,
+                loss_weight=1.0),
+            loss_bbox=dict(type='L1Loss', loss_weight=1.0),
+            init_cfg=[
+                dict(
+                    type='Caffe2Xavier',
+                    override=dict(type='Caffe2Xavier', name='shared_fcs')),
+                dict(
+                    type='Normal',
+                    override=dict(type='Normal', name='fc_cls', std=0.01)),
+                dict(
+                    type='Normal',
+                    override=dict(type='Normal', name='fc_reg', std=0.001))
+            ])))
 
+data = dict(
+    samples_per_gpu=2,
+    workers_per_gpu=2,
+    train=dict(
+        type='FewShotSARDet100KDefaultDataset',
+        ann_cfg=[dict(method='SAE_FSDet', setting=f'SPLIT2_{num_shots}SHOT')],
+        num_novel_shots=num_shots,
+        num_base_shots=num_shots,
+        classes=('aircraft', 'car', 'tank', 'bridge', 'harbor', 'ship')),
+    val=dict(classes=('aircraft', 'car', 'tank', 'bridge', 'harbor', 'ship')),
+    test=dict(classes=('aircraft', 'car', 'tank', 'bridge', 'harbor', 'ship')))
+evaluation = dict(
+    interval=27,
+    metric='bbox',
+    classwise=True,
+    class_splits=['BASE_CLASSES_SPLIT2', 'NOVEL_CLASSES_SPLIT2'])
+checkpoint_config = dict(interval=27)
+optimizer = dict(type='SGD', lr=0.004, momentum=0.9, weight_decay=0.0001)
 lr_config = dict(
+    _delete_=True,
     policy='step',
     warmup='linear',
-    warmup_iters=200,
+    warmup_iters=100,
     warmup_ratio=0.001,
-    step=[12, 16])
-runner = dict(type='EpochBasedRunner', max_epochs=18)
-data = dict(samples_per_gpu=batch_size, workers_per_gpu=4,
-    train=dict(
-        classes='BASE_CLASSES_SPLIT2',
-        ann_cfg=[dict(type='ann_file', ann_file='data/SAR-Aircraft-1.0/split2/base_trainval.json')]),
-    val=dict(
-        classes='BASE_CLASSES_SPLIT2',
-        ann_cfg=[dict(type='ann_file', ann_file='data/SAR-Aircraft-1.0/split2/base_test.json')]),
-    test=dict(
-        classes='BASE_CLASSES_SPLIT2',
-        ann_cfg=[dict(type='ann_file', ann_file='data/SAR-Aircraft-1.0/split2/base_test.json')]))
-evaluation = dict(
-    interval=6,
-    metric='bbox',
-    classwise=True)
-checkpoint_config = dict(interval=2)
-optimizer = dict(type='SGD', lr=0.01, momentum=0.9, weight_decay=0.0001)
-
-work_dir = 'work_dirs/SAE-FSDet/sar-aircraft/split2/4xb4_BT/'
+    step=[95])
+runner = dict(_delete_=True, type='EpochBasedRunner', max_epochs=108)
+load_from = 'work_dirs/SAE-FSDet/sardet100k/split2/4xb2_BT/base_model_random_init_bbox_head.pth'
+work_dir = 'work_dirs/SAE-FSDet/sardet100k/split2/4xb2_1shot_FT/'

@@ -49,9 +49,9 @@ data = dict(
         ann_cfg=[
             dict(
                 type='ann_file',
-                ann_file = data_root + 'Annotations/val.json')
+                ann_file = data_root + 'split1/base_test.json')
         ],
-        img_prefix=data_root+'JPEGImages/val/',
+        img_prefix=data_root+'JPEGImages/test/',
         pipeline=test_pipeline,
         classes='BASE_CLASSES_SPLIT1'),
     test=dict(
@@ -59,9 +59,9 @@ data = dict(
         ann_cfg=[
             dict(
                 type='ann_file',
-                ann_file=data_root + 'split1/FewShot_test.json')
+                ann_file=data_root + 'split1/base_test.json')
         ],
-        img_prefix=data_root+'JPEGImages/val/',
+        img_prefix=data_root+'JPEGImages/test/',
         pipeline=test_pipeline,
         test_mode=True,
         classes='BASE_CLASSES_SPLIT1'))

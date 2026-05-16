@@ -1,15 +1,15 @@
 _base_ = [
-    '../../_base_/few_shot_sar-aircraft_finetune.py',
+    '../../_base_/few_shot_sardet100k_finetune.py',
     '../../_base_/schedule.py',
     '../../_base_/faster_rcnn_r50_caffe_fpn.py',
     '../../_base_/default_runtime.py'
 ]
 
-split_id = 1
-num_shots = 10
+split_id = 2
+num_shots = 5
 num_base_classes = 5
-num_novel_classes = 2
-num_classes = 7
+num_novel_classes = 1
+num_classes = 6
 
 rpn_weight = 0.7
 
@@ -145,29 +145,30 @@ model.update(
             ])))
 
 data = dict(
-    samples_per_gpu=4,
-    workers_per_gpu=4,
+    samples_per_gpu=2,
+    workers_per_gpu=2,
     train=dict(
-        type='FewShotSARAircraftDefaultDataset',
-        ann_cfg=[dict(method='SAE_FSDet', setting=f'SPLIT1_{num_shots}SHOT')],
+        type='FewShotSARDet100KDefaultDataset',
+        ann_cfg=[dict(method='SAE_FSDet', setting=f'SPLIT2_{num_shots}SHOT')],
         num_novel_shots=num_shots,
         num_base_shots=num_shots,
-        classes=('Boeing787', 'A330', 'A220', 'A320orA321', 'other', 'Boeing737', 'ARJ21')),
-    val=dict(classes=('Boeing787', 'A330', 'A220', 'A320orA321', 'other', 'Boeing737', 'ARJ21')),
-    test=dict(classes=('Boeing787', 'A330', 'A220', 'A320orA321', 'other', 'Boeing737', 'ARJ21')))
+        classes=('aircraft', 'car', 'tank', 'bridge', 'harbor', 'ship')),
+    val=dict(classes=('aircraft', 'car', 'tank', 'bridge', 'harbor', 'ship')),
+    test=dict(classes=('aircraft', 'car', 'tank', 'bridge', 'harbor', 'ship')))
 evaluation = dict(
     interval=27,
     metric='bbox',
     classwise=True,
-    class_splits=['BASE_CLASSES_SPLIT1', 'NOVEL_CLASSES_SPLIT1'])
+    class_splits=['BASE_CLASSES_SPLIT2', 'NOVEL_CLASSES_SPLIT2'])
 checkpoint_config = dict(interval=27)
-optimizer = dict(type='SGD', lr=0.001, momentum=0.9, weight_decay=0.0001)
+optimizer = dict(type='SGD', lr=0.004, momentum=0.9, weight_decay=0.0001)
 lr_config = dict(
+    _delete_=True,
     policy='step',
     warmup='linear',
     warmup_iters=100,
     warmup_ratio=0.001,
     step=[95])
-runner = dict(type='EpochBasedRunner', max_epochs=108)
-load_from = 'work_dirs/SAE-FSDet/sar-aircraft/split1/4xb4_BT/latest.pth'
-work_dir = 'work_dirs/SAE-FSDet/sar-aircraft/split1/4xb4_10shot_FT/'
+runner = dict(_delete_=True, type='EpochBasedRunner', max_epochs=108)
+load_from = 'work_dirs/SAE-FSDet/sardet100k/split2/4xb2_BT/base_model_random_init_bbox_head.pth'
+work_dir = 'work_dirs/SAE-FSDet/sardet100k/split2/4xb2_5shot_FT/'
