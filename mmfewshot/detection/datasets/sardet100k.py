@@ -2,6 +2,7 @@
 import itertools
 import logging
 import os.path as osp
+import re
 from collections import OrderedDict
 from typing import Dict, List, Optional, Sequence, Union
 
@@ -69,8 +70,12 @@ class FewShotSARDet100KDataset(BaseFewShotDataset, CocoDataset):
             self.dataset_name = dataset_name
         self.SPLIT = SARDET100K_SPLIT
 
-        # the split_id would be set value in `self.get_classes`
-        self.split_id = None
+        # the split_id would be set value in `self.get_classes` when classes
+        # is a predefined split string. Default datasets may pass an explicit
+        # class order, so infer the split from ann_cfg before creating shot
+        # filters.
+        self.split_id = self._infer_split_id_from_ann_cfg(
+            kwargs.get('ann_cfg', None))
 
         assert classes is not None, f'{self.dataset_name}: classes in ' \
                                     f'`FewShotSARDet100KDataset` can not be None.'
@@ -101,6 +106,26 @@ class FewShotSARDet100KDataset(BaseFewShotDataset, CocoDataset):
             dataset_name=dataset_name,
             test_mode=test_mode,
             **kwargs)
+
+    @staticmethod
+    def _infer_split_id_from_ann_cfg(ann_cfg: Optional[Union[List[Dict], Dict]]
+                                    ) -> Optional[int]:
+        if ann_cfg is None:
+            return None
+        if isinstance(ann_cfg, dict):
+            ann_cfg = [ann_cfg]
+        if not isinstance(ann_cfg, list):
+            return None
+        for ann_cfg_ in ann_cfg:
+            if not isinstance(ann_cfg_, dict):
+                continue
+            setting = ann_cfg_.get('setting', None)
+            if not isinstance(setting, str):
+                continue
+            match = re.match(r'SPLIT(\d+)_', setting)
+            if match is not None:
+                return int(match.group(1))
+        return None
 
     def get_classes(self, classes: Union[str, Sequence[str]]) -> List[str]:
         """Get class names.
@@ -663,23 +688,12 @@ class FewShotSARDet100KDefaultDataset(FewShotSARDet100KDataset):
         f'SPLIT{split}_{shot}SHOT': [
             dict(
                 type='ann_file',
-                ann_file=f'data/sardet100k/split1/'
+                ann_file=f'data/sardet100k/split{split}/'
                 f'FewShot_{shot}shot_train_seed0.json')
                 # f'SARDet100K_{shot}shot_train_seed42.json')
         ]
         for shot in [1, 2, 3, 5, 10, 30] for split in [1, 2]
     }
-
-    # sardet100k_benchmark = {
-    #     f'SPLIT{split}_{shot}SHOT': [
-    #         dict(
-    #             type='ann_file',
-    #             ann_file=f'data/sardet100k/split{split}/'
-    #             f'FewShot_{shot}shot_train_seed0.json')
-    #             # f'SARDet100K_{shot}shot_train_seed42.json')
-    #     ]
-    #     for shot in [1, 2, 3, 5, 10, 30] for split in [1, 2]
-    # }
 
     # pre-defined annotation config for model reproducibility
     DEFAULT_ANN_CONFIG = dict(

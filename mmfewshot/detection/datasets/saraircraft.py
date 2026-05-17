@@ -2,6 +2,7 @@
 import itertools
 import logging
 import os.path as osp
+import re
 from collections import OrderedDict
 from typing import Dict, List, Optional, Sequence, Union
 
@@ -69,8 +70,12 @@ class FewShotSARAircraftDataset(BaseFewShotDataset, CocoDataset):
             self.dataset_name = dataset_name
         self.SPLIT = SARAircraft_SPLIT
 
-        # the split_id would be set value in `self.get_classes`
-        self.split_id = None
+        # the split_id would be set value in `self.get_classes` when classes
+        # is a predefined split string. Default datasets may pass an explicit
+        # class order, so infer the split from ann_cfg before creating shot
+        # filters.
+        self.split_id = self._infer_split_id_from_ann_cfg(
+            kwargs.get('ann_cfg', None))
 
         assert classes is not None, f'{self.dataset_name}: classes in ' \
                                     f'`FewShotSARAircraftDataset` can not be None.'
@@ -101,6 +106,26 @@ class FewShotSARAircraftDataset(BaseFewShotDataset, CocoDataset):
             dataset_name=dataset_name,
             test_mode=test_mode,
             **kwargs)
+
+    @staticmethod
+    def _infer_split_id_from_ann_cfg(ann_cfg: Optional[Union[List[Dict], Dict]]
+                                    ) -> Optional[int]:
+        if ann_cfg is None:
+            return None
+        if isinstance(ann_cfg, dict):
+            ann_cfg = [ann_cfg]
+        if not isinstance(ann_cfg, list):
+            return None
+        for ann_cfg_ in ann_cfg:
+            if not isinstance(ann_cfg_, dict):
+                continue
+            setting = ann_cfg_.get('setting', None)
+            if not isinstance(setting, str):
+                continue
+            match = re.match(r'SPLIT(\d+)_', setting)
+            if match is not None:
+                return int(match.group(1))
+        return None
 
     def get_classes(self, classes: Union[str, Sequence[str]]) -> List[str]:
         """Get class names.
