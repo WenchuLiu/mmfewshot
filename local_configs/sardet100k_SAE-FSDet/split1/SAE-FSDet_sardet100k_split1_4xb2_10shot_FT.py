@@ -11,6 +11,12 @@ num_base_classes = 5
 num_novel_classes = 1
 num_classes = 6
 
+classes = ('ship', 'car', 'tank', 'bridge', 'harbor', 'aircraft')
+base_classes = ('ship', 'car', 'tank', 'bridge', 'harbor')
+novel_classes = ('aircraft',)
+base_label_ids = tuple(i for i, c in enumerate(classes) if c in base_classes)
+novel_label_ids = tuple(i for i, c in enumerate(classes) if c in novel_classes)
+
 rpn_weight = 0.7
 
 model = dict(
@@ -121,6 +127,8 @@ model.update(
             num_shared_fcs=2,
             num_classes=num_base_classes,
             num_novel_classes=num_novel_classes,
+            base_label_ids=base_label_ids,
+            novel_label_ids=novel_label_ids,
             bbox_coder=dict(
                 type='DeltaXYWHBBoxCoder',
                 target_means=[0.0, 0.0, 0.0, 0.0],
@@ -130,6 +138,8 @@ model.update(
                 type='LCCFocalLoss',
                 num_base_classes=num_base_classes,
                 num_novel_classes=num_novel_classes,
+                base_label_ids=base_label_ids,
+                novel_label_ids=novel_label_ids,
                 loss_weight=1.0),
             loss_bbox=dict(type='L1Loss', loss_weight=1.0),
             init_cfg=[
@@ -152,9 +162,9 @@ data = dict(
         ann_cfg=[dict(method='SAE_FSDet', setting=f'SPLIT1_{num_shots}SHOT')],
         num_novel_shots=num_shots,
         num_base_shots=num_shots,
-        classes=('ship', 'car', 'tank', 'bridge', 'harbor', 'aircraft')),
-    val=dict(classes=('ship', 'car', 'tank', 'bridge', 'harbor', 'aircraft')),
-    test=dict(classes=('ship', 'car', 'tank', 'bridge', 'harbor', 'aircraft')))
+        classes=classes),
+    val=dict(classes=classes),
+    test=dict(classes=classes))
 evaluation = dict(
     interval=27,
     metric='bbox',
