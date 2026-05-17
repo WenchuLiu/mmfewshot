@@ -19,6 +19,15 @@ from mmfewshot.detection.datasets import (build_dataloader, build_dataset,
 from mmfewshot.utils import compat_cfg, get_root_logger
 
 
+def _uses_lcc_box_head(cfg: ConfigDict) -> bool:
+    bbox_head_cfg = cfg.get('model', {}).get('roi_head',
+                                             {}).get('bbox_head', {})
+    if isinstance(bbox_head_cfg, (list, tuple)):
+        return any(head_cfg.get('type', None) == 'LCCBoxHead'
+                   for head_cfg in bbox_head_cfg)
+    return bbox_head_cfg.get('type', None) == 'LCCBoxHead'
+
+
 def train_detector(model: nn.Module,
                    dataset: Iterable,
                    cfg: ConfigDict,
@@ -195,6 +204,11 @@ def train_detector(model: nn.Module,
             ), f'Each item in custom_hooks expects dict type, but ' \
                f'got {type(hook_cfg)}'
             hook_cfg = hook_cfg.copy()
+            if (hook_cfg.get('type', None) == 'NumClassCheckHook'
+                    and _uses_lcc_box_head(cfg)):
+                logger.info('Skip NumClassCheckHook for LCCBoxHead because '
+                            'num_classes stores base classes only.')
+                continue
             priority = hook_cfg.pop('priority', 'NORMAL')
             hook = build_from_cfg(hook_cfg, HOOKS)
             runner.register_hook(hook, priority=priority)
