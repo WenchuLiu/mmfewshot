@@ -11,6 +11,16 @@ num_base_classes = 5
 num_novel_classes = 1
 num_classes = 6
 
+# When classes are ordered as (base..., novel...), the default label IDs
+# (base=[0..num_base-1], novel=[num_base..num_base+num_novel-1]) work fine.
+# If novel class IDs are interleaved among base IDs in the `classes` tuple,
+# specify the actual integer label IDs explicitly, e.g.:
+#   classes=('ship', 'aircraft', 'car', 'tank', 'bridge', 'harbor')
+#   base_label_ids = (0, 2, 3, 4, 5)   # ship, car, tank, bridge, harbor
+#   novel_label_ids = (1,)             # aircraft
+base_label_ids = tuple(range(num_base_classes))
+novel_label_ids = tuple(range(num_base_classes, num_base_classes + num_novel_classes))
+
 rpn_weight = 0.7
 
 model = dict(
@@ -121,6 +131,8 @@ model.update(
             num_shared_fcs=2,
             num_classes=num_base_classes,
             num_novel_classes=num_novel_classes,
+            base_label_ids=base_label_ids,
+            novel_label_ids=novel_label_ids,
             bbox_coder=dict(
                 type='DeltaXYWHBBoxCoder',
                 target_means=[0.0, 0.0, 0.0, 0.0],
@@ -130,6 +142,8 @@ model.update(
                 type='LCCFocalLoss',
                 num_base_classes=num_base_classes,
                 num_novel_classes=num_novel_classes,
+                base_label_ids=base_label_ids,
+                novel_label_ids=novel_label_ids,
                 loss_weight=1.0),
             loss_bbox=dict(type='L1Loss', loss_weight=1.0),
             init_cfg=[

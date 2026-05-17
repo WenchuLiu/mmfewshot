@@ -12,6 +12,8 @@ class LCCBoxHead(ConvFCBBoxHead):
 
     def __init__(self,
                  num_novel_classes=5,
+                 base_label_ids=None,
+                 novel_label_ids=None,
                  use_dropout=False,
                  dropout_ratio=0.8,
                  **kwargs):
@@ -21,6 +23,22 @@ class LCCBoxHead(ConvFCBBoxHead):
         self.dropout_ratio = dropout_ratio
         self.fc_cls_novel = torch.nn.Linear(self.cls_last_dim,
                                             self.num_novel_classes + 1)
+
+        if base_label_ids is None:
+            self.base_label_ids = list(range(self.num_classes))
+        else:
+            self.base_label_ids = list(base_label_ids)
+        if novel_label_ids is None:
+            self.novel_label_ids = list(
+                range(self.num_classes, self.num_classes + num_novel_classes))
+        else:
+            self.novel_label_ids = list(novel_label_ids)
+
+        # Build permutation to reorder assembled scores from
+        # [base_0..base_{B-1}, novel_0..novel_{N-1}] into actual label order.
+        all_internal = self.base_label_ids + self.novel_label_ids
+        self.register_buffer(
+            '_score_perm', torch.argsort(torch.tensor(all_internal)))
 
     def _get_target_single(self, pos_bboxes, neg_bboxes, pos_gt_bboxes,
                            pos_gt_labels, cfg):
@@ -173,6 +191,8 @@ class LCCBoxHead(ConvFCBBoxHead):
                                                                   None] * cls_score_novel
                     cls_score_temp = torch.cat(
                         (cls_score_base_temp, cls_score_novel_temp), dim=1)
+                    cls_score_temp = cls_score_temp[:, self._score_perm.to(
+                        cls_score_temp.device)]
                     losses['acc'] = accuracy(cls_score_temp, labels)
         if bbox_pred is not None:
             bg_class_ind = self.num_classes + self.num_novel_classes
@@ -257,6 +277,7 @@ class LCCBoxHead(ConvFCBBoxHead):
                                             num_classes][:,
                                                          None] * scores_novel
             scores = torch.cat((scores_base_temp, scores_novel_temp), dim=1)
+            scores = scores[:, self._score_perm.to(scores.device)]
         # bbox_pred would be None in some detector when with_reg is False,
         # e.g. Grid R-CNN.
         if bbox_pred is not None:

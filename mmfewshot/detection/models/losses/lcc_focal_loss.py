@@ -44,6 +44,8 @@ class LCCFocalLoss(nn.Module):
     def __init__(self,
                  num_base_classes,
                  num_novel_classes,
+                 base_label_ids=None,
+                 novel_label_ids=None,
                  gamma=2.0,
                  alpha=0.25,
                  reduction='mean',
@@ -58,6 +60,17 @@ class LCCFocalLoss(nn.Module):
         self.reduction = reduction
         self.loss_weight = loss_weight
         self.activated = activated
+
+        if base_label_ids is None:
+            self.base_label_ids = list(range(num_base_classes))
+        else:
+            self.base_label_ids = list(base_label_ids)
+        if novel_label_ids is None:
+            self.novel_label_ids = list(
+                range(num_base_classes, num_base_classes + num_novel_classes))
+        else:
+            self.novel_label_ids = list(novel_label_ids)
+
         if alpha is None:
             self.alpha = Variable(torch.ones(self.num_classes, 1))
         else:
@@ -66,6 +79,32 @@ class LCCFocalLoss(nn.Module):
         self.cls_criterion = cross_entropy
         self.cls_criterion1 = MultiCEFocalLoss(
             num_novel_classes + 1, reduction=self.reduction)
+
+        self._label_maps_built = False
+
+    def _build_label_maps(self, device):
+        """Build label remapping tensors on the given device."""
+        if self._label_maps_built:
+            return
+        max_label = max(
+            max(self.base_label_ids), max(self.novel_label_ids))
+        # stage0: map each label to [0, num_base_classes]
+        # base label -> its position in base_label_ids; novel/bg -> num_base_classes
+        self._stage0_map = torch.full(
+            (max_label + 1,), self.num_base_classes, dtype=torch.long, device=device)
+        for i, lbl in enumerate(self.base_label_ids):
+            self._stage0_map[lbl] = i
+
+        # stage1: identify novel labels and map to [0, num_novel-1]
+        self._is_novel = torch.zeros(
+            max_label + 1, dtype=torch.bool, device=device)
+        self._novel_map = torch.zeros(
+            max_label + 1, dtype=torch.long, device=device)
+        for i, lbl in enumerate(self.novel_label_ids):
+            self._is_novel[lbl] = True
+            self._novel_map[lbl] = i
+
+        self._label_maps_built = True
 
     def forward(self,
                 predict,
@@ -78,12 +117,16 @@ class LCCFocalLoss(nn.Module):
         assert reduction_override in (None, 'none', 'mean', 'sum')
         reduction = (
             reduction_override if reduction_override else self.reduction)
-        # if self.class_weight is not None:
-        #     class_weight = predict.new_tensor(
-        #         self.class_weight, device=predict.device)
-        # else:
-        #     class_weight = None
-        label_stage0 = torch.clamp(target, 0, self.num_base_classes)
+
+        self._build_label_maps(target.device)
+
+        # stage0: map targets to [0, num_base_classes]
+        # base labels -> their position in base_label_ids
+        # novel/bg labels -> num_base_classes (the "other" bin)
+        valid_mask = target < len(self._stage0_map)
+        label_stage0 = target.clone()
+        label_stage0[valid_mask] = self._stage0_map[target[valid_mask]]
+        label_stage0 = torch.clamp(label_stage0, 0, self.num_base_classes)
         loss_cls_stage0 = self.loss_weight * self.cls_criterion(
             predict,
             label_stage0,
@@ -95,12 +138,14 @@ class LCCFocalLoss(nn.Module):
             avg_non_ignore=False,
             **kwargs)
 
-        label_stage1_index = target >= self.num_base_classes
-        cls_score_stage1 = predict_novel[label_stage1_index]
-        label_stage1 = target[label_stage1_index] - self.num_base_classes
-        # weight_stage1 = weight[label_stage1_index]
-        # avg_factor_stage1 = float(len(cls_score_stage1))
+        # stage1: identify novel labels and map to [0, num_novel-1]
+        valid_mask = target < len(self._is_novel)
+        label_stage1_mask = torch.zeros_like(target, dtype=torch.bool)
+        label_stage1_mask[valid_mask] = self._is_novel[target[valid_mask]]
+
+        cls_score_stage1 = predict_novel[label_stage1_mask]
         if cls_score_stage1.numel() > 0:
+            label_stage1 = self._novel_map[target[label_stage1_mask]]
             loss_cls_stage1 = self.loss_weight * \
                 self.cls_criterion1(cls_score_stage1, label_stage1)
         else:
