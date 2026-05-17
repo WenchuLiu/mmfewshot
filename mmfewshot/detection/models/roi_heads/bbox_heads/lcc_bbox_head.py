@@ -35,10 +35,12 @@ class LCCBoxHead(ConvFCBBoxHead):
             self.novel_label_ids = list(novel_label_ids)
 
         # Build permutation to reorder assembled scores from
-        # [base_0..base_{B-1}, novel_0..novel_{N-1}] into actual label order.
+        # [base_0..base_{B-1}, novel_0..novel_{N-1}, novel_bg] into actual
+        # label order while keeping novel_bg at the end.
         all_internal = self.base_label_ids + self.novel_label_ids
-        self.register_buffer(
-            '_score_perm', torch.argsort(torch.tensor(all_internal)))
+        fg_perm = torch.argsort(torch.tensor(all_internal))
+        bg_idx = torch.tensor([len(all_internal)], dtype=torch.long)
+        self.register_buffer('_score_perm', torch.cat([fg_perm, bg_idx]))
 
     def _get_target_single(self, pos_bboxes, neg_bboxes, pos_gt_bboxes,
                            pos_gt_labels, cfg):

@@ -120,6 +120,8 @@ class LCCFocalLoss(nn.Module):
 
         self._build_label_maps(target.device)
 
+        bg_label = self.num_base_classes + self.num_novel_classes
+
         # stage0: map targets to [0, num_base_classes]
         # base labels -> their position in base_label_ids
         # novel/bg labels -> num_base_classes (the "other" bin)
@@ -138,14 +140,25 @@ class LCCFocalLoss(nn.Module):
             avg_non_ignore=False,
             **kwargs)
 
-        # stage1: identify novel labels and map to [0, num_novel-1]
+        # stage1: novel targets -> their novel index; BG targets -> novel_bg
         valid_mask = target < len(self._is_novel)
-        label_stage1_mask = torch.zeros_like(target, dtype=torch.bool)
-        label_stage1_mask[valid_mask] = self._is_novel[target[valid_mask]]
+        is_novel_target = torch.zeros_like(target, dtype=torch.bool)
+        is_novel_target[valid_mask] = self._is_novel[target[valid_mask]]
 
-        cls_score_stage1 = predict_novel[label_stage1_mask]
+        # include novel targets and BG targets (BG mapped to num_novel_classes)
+        is_stage1 = is_novel_target | (target == bg_label)
+
+        cls_score_stage1 = predict_novel[is_stage1]
         if cls_score_stage1.numel() > 0:
-            label_stage1 = self._novel_map[target[label_stage1_mask]]
+            stage1_targets = target[is_stage1]
+            # default: novel_bg (for BG samples)
+            label_stage1 = torch.full_like(
+                stage1_targets, self.num_novel_classes)
+            # novel targets: map to their internal novel index
+            novel_in_stage1 = is_novel_target[is_stage1]
+            if novel_in_stage1.any():
+                label_stage1[novel_in_stage1] = self._novel_map[
+                    stage1_targets[novel_in_stage1]]
             loss_cls_stage1 = self.loss_weight * \
                 self.cls_criterion1(cls_score_stage1, label_stage1)
         else:
