@@ -11,7 +11,7 @@ num_base_classes = 5
 num_novel_classes = 1
 num_classes = 6
 
-classes = ('ship', 'car', 'tank', 'bridge', 'harbor', 'aircraft')
+classes = ('ship', 'aircraft', 'car', 'tank', 'bridge', 'harbor')
 base_classes = ('ship', 'car', 'tank', 'bridge', 'harbor')
 novel_classes = ('aircraft',)
 base_label_ids = tuple(i for i, c in enumerate(classes) if c in base_classes)
@@ -180,5 +180,5 @@ lr_config = dict(
     warmup_ratio=0.001,
     step=[95])
 runner = dict(_delete_=True, type='EpochBasedRunner', max_epochs=108)
-load_from = 'work_dirs/SAE-FSDet/sardet100k/split1/4xb2_BT/base_model_random_init_bbox_head.pth'
+load_from = 'work_dirs/SAE-FSDet/sardet100k/split1/4xb2_BT/latest.pth'
 work_dir = 'work_dirs/SAE-FSDet/sardet100k/split1/4xb2_10shot_FT/'

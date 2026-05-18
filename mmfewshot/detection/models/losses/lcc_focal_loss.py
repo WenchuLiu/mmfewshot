@@ -1,12 +1,8 @@
-from turtle import forward
-
 import torch
-# from mmdet.models.losses.cross_entropy_loss import CrossEntropyLoss
 import torch.nn as nn
 import torch.nn.functional as F
 from mmdet.models.builder import LOSSES
 from mmdet.models.losses.cross_entropy_loss import cross_entropy
-from torch.autograd import Variable
 
 
 class MultiCEFocalLoss(torch.nn.Module):
@@ -14,21 +10,25 @@ class MultiCEFocalLoss(torch.nn.Module):
     def __init__(self, class_num, gamma=2, alpha=None, reduction='mean'):
         super().__init__()
         if alpha is None:
-            self.alpha = Variable(torch.ones(class_num, 1)).cuda()
+            alpha = torch.ones(class_num, 1)
         else:
-            self.alpha = alpha
+            alpha = torch.as_tensor(alpha, dtype=torch.float32)
+            if alpha.ndim == 0:
+                alpha = alpha.repeat(class_num).view(class_num, 1)
+            elif alpha.ndim == 1:
+                alpha = alpha.view(class_num, 1)
+        self.register_buffer('alpha', alpha.float())
         self.gamma = gamma
         self.reduction = reduction
         self.class_num = class_num
 
     def forward(self, predict, target):
-        pt = F.softmax(predict, dim=1)  # softmmax获取预测概率
-        class_mask = F.one_hot(target, self.class_num)  # 获取target的one hot编码
+        pt = F.softmax(predict, dim=1)
+        class_mask = F.one_hot(target, self.class_num).type_as(predict)
         ids = target.view(-1, 1)
-        # 注意，这里的alpha是给定的一个list(tensor#,里面的元素分别是每一个类的权重因子
-        alpha = self.alpha[ids.data.view(-1)]
-        probs = (pt * class_mask).sum(1).view(-1, 1)  # 利用onehot作为mask，提取对pt
-        log_p = probs.log()  # 同样，原始ce上增加一个动态权重衰减因子
+        alpha = self.alpha.to(predict.device)[ids.data.view(-1)]
+        probs = (pt * class_mask).sum(1).view(-1, 1)
+        log_p = probs.log()
         loss = -alpha * (torch.pow((1 - probs), self.gamma)) * log_p
 
         if self.reduction == 'mean':
@@ -71,10 +71,7 @@ class LCCFocalLoss(nn.Module):
         else:
             self.novel_label_ids = list(novel_label_ids)
 
-        if alpha is None:
-            self.alpha = Variable(torch.ones(self.num_classes, 1))
-        else:
-            self.alpha = alpha
+        self.alpha = alpha
 
         self.cls_criterion = cross_entropy
         self.cls_criterion1 = MultiCEFocalLoss(
@@ -84,10 +81,11 @@ class LCCFocalLoss(nn.Module):
 
     def _build_label_maps(self, device):
         """Build label remapping tensors on the given device."""
-        if self._label_maps_built:
+        if (self._label_maps_built and hasattr(self, '_stage0_map')
+                and self._stage0_map.device == device):
             return
-        max_label = max(
-            max(self.base_label_ids), max(self.novel_label_ids))
+        label_ids = self.base_label_ids + self.novel_label_ids
+        max_label = max(label_ids)
         # stage0: map each label to [0, num_base_classes]
         # base label -> its position in base_label_ids; novel/bg -> num_base_classes
         self._stage0_map = torch.full(

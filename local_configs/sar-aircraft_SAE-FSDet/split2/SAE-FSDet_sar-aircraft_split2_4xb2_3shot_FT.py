@@ -11,7 +11,7 @@ num_base_classes = 5
 num_novel_classes = 2
 num_classes = 7
 
-classes = ('Boeing737', 'A330', 'A220', 'A320orA321', 'other', 'Boeing787', 'ARJ21')
+classes = ('Boeing737', 'Boeing787', 'A330', 'A220', 'A320orA321', 'ARJ21', 'other')
 base_classes = ('Boeing737', 'A330', 'A220', 'A320orA321', 'other')
 novel_classes = ('Boeing787', 'ARJ21')
 base_label_ids = tuple(i for i, c in enumerate(classes) if c in base_classes)
@@ -163,8 +163,12 @@ data = dict(
         num_novel_shots=num_shots,
         num_base_shots=num_shots,
         classes=classes),
-    val=dict(classes=classes),
-    test=dict(classes=classes))
+    val=dict(
+        ann_cfg=[dict(type='ann_file', ann_file='data/SAR-Aircraft-1.0/split2/ft_test.json')],
+        classes=classes),
+    test=dict(
+        ann_cfg=[dict(type='ann_file', ann_file='data/SAR-Aircraft-1.0/split2/ft_test.json')],
+        classes=classes))
 evaluation = dict(
     interval=27,
     metric='bbox',
@@ -180,5 +184,5 @@ lr_config = dict(
     warmup_ratio=0.001,
     step=[95])
 runner = dict(_delete_=True, type='EpochBasedRunner', max_epochs=108)
-load_from = 'work_dirs/SAE-FSDet/sar-aircraft/split2/4xb2_BT/base_model_random_init_bbox_head.pth'
+load_from = 'work_dirs/SAE-FSDet/sar-aircraft/split2/4xb2_BT/latest.pth'
 work_dir = 'work_dirs/SAE-FSDet/sar-aircraft/split2/4xb2_3shot_FT/'
