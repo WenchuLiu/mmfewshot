@@ -184,7 +184,7 @@ lr_config = dict(
     warmup='linear',
     warmup_iters=100,
     warmup_ratio=0.001,
-    step=[95])
-runner = dict(_delete_=True, type='EpochBasedRunner', max_epochs=108)
+    step=[190])
+runner = dict(_delete_=True, type='EpochBasedRunner', max_epochs=216)
 load_from = 'work_dirs/SAE-FSDet/sar-aircraft/split2/4xb2_BT/latest.pth'
 work_dir = 'work_dirs/SAE-FSDet/sar-aircraft/split2/4xb2_5shot_FT/'
