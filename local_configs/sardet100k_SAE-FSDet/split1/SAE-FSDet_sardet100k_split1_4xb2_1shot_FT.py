@@ -166,11 +166,11 @@ data = dict(
     val=dict(classes=classes),
     test=dict(classes=classes))
 evaluation = dict(
-    interval=27,
+    interval=108,
     metric='bbox',
     classwise=True,
     class_splits=['BASE_CLASSES_SPLIT1', 'NOVEL_CLASSES_SPLIT1'])
-checkpoint_config = dict(interval=27)
+checkpoint_config = dict(interval=108)
 optimizer = dict(type='SGD', lr=0.004, momentum=0.9, weight_decay=0.0001)
 lr_config = dict(
     _delete_=True,
