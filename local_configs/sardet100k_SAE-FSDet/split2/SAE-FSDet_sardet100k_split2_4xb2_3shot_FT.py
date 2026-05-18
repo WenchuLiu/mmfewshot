@@ -155,7 +155,7 @@ model.update(
             ])))
 
 data = dict(
-    samples_per_gpu=2,
+    samples_per_gpu=4,
     workers_per_gpu=2,
     train=dict(
         type='FewShotSARDet100KDefaultDataset',
@@ -175,9 +175,7 @@ evaluation = dict(
     classwise=True,
     class_splits=['BASE_CLASSES_SPLIT2', 'NOVEL_CLASSES_SPLIT2'])
 checkpoint_config = dict(interval=1000000)
-log_config = dict(
-    interval=1000, hooks=[dict(type='TextLoggerHook', ignore_last=False)])
-optimizer = dict(type='SGD', lr=0.004, momentum=0.9, weight_decay=0.0001)
+optimizer = dict(type='SGD', lr=0.001, momentum=0.9, weight_decay=0.0001)
 lr_config = dict(
     _delete_=True,
     policy='step',
