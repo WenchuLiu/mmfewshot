@@ -166,11 +166,11 @@ data = dict(
     val=dict(classes=classes),
     test=dict(classes=classes))
 evaluation = dict(
-    interval=108,
+    interval=6000,
     metric='bbox',
     classwise=True,
     class_splits=['BASE_CLASSES_SPLIT1', 'NOVEL_CLASSES_SPLIT1'])
-checkpoint_config = dict(interval=108)
+checkpoint_config = dict(interval=1000000)
 log_config = dict(
     interval=1000, hooks=[dict(type='TextLoggerHook', ignore_last=False)])
 optimizer = dict(type='SGD', lr=0.004, momentum=0.9, weight_decay=0.0001)
@@ -180,7 +180,7 @@ lr_config = dict(
     warmup='linear',
     warmup_iters=100,
     warmup_ratio=0.001,
-    step=[190])
-runner = dict(_delete_=True, type='EpochBasedRunner', max_epochs=216)
+    step=[4500])
+runner = dict(max_iters=6000)
 load_from = 'work_dirs/SAE-FSDet/sardet100k/split1/4xb2_BT/latest.pth'
 work_dir = 'work_dirs/SAE-FSDet/sardet100k/split1/4xb2_1shot_FT/'

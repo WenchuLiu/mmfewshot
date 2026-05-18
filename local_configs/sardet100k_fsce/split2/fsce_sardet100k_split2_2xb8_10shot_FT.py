@@ -16,7 +16,7 @@ data = dict(
         type='FewShotSARDet100KDefaultDataset',
         ann_cfg=[dict(method='FSCE', setting=f'SPLIT2_{num_shots}SHOT')],
         num_novel_shots=num_shots,
-        num_base_shots=num_shots,
+        num_base_shots=5,
         classes='ALL_CLASSES_SPLIT2'),
     val=dict(
         ann_cfg=[
@@ -46,11 +46,19 @@ data = dict(
 #         rcnn=dict(
 #             assigner=dict(pos_iou_thr=0.5, neg_iou_thr=0.5, min_pos_iou=0.5))))
 
-evaluation = dict(interval=6000)
-checkpoint_config = dict(interval=6000)
-optimizer = dict(lr=0.001)
-lr_config = dict(warmup_iters=100, gamma=0.3, step=[5000])
-runner = dict(max_iters=6000)
+evaluation = dict(
+    interval=2000,
+    save_best='NOVEL_CLASSES_SPLIT2 bbox_mAP',
+    rule='greater')
+checkpoint_config = dict(interval=2000)
+optimizer = dict(lr=0.0005)
+lr_config = dict(
+    warmup='linear',
+    warmup_iters=200,
+    warmup_ratio=0.001,
+    gamma=0.3,
+    step=[8000, 11000])
+runner = dict(max_iters=12000)
 model = dict(
     roi_head=dict(bbox_head=dict(num_classes=num_classes)),
     train_cfg=dict(

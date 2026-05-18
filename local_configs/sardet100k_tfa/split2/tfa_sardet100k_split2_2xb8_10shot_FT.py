@@ -19,7 +19,7 @@ data = dict(
         type='FewShotSARDet100KDefaultDataset',
         ann_cfg=[dict(method='TFA', setting=f'SPLIT2_{num_shots}SHOT')],
         num_novel_shots=num_shots,
-        num_base_shots=num_shots,
+        num_base_shots=5,
         classes='ALL_CLASSES_SPLIT2'),
     val=dict(classes='ALL_CLASSES_SPLIT2'),
     test=dict(classes='ALL_CLASSES_SPLIT2'))
@@ -27,11 +27,19 @@ data = dict(
 # 几shot就 1200*几 个iter，因为coco有80个类，sardet50k一共有6个类，
 # 80个类有160000个iter，对应sardet50k就是12000个iter，对应sardet50k就是每个 shot 1200个iter
 # 原来设置是2xb2，针对batchsize不同要做更改
-evaluation = dict(interval=7000)
-checkpoint_config = dict(interval=7000)
-optimizer = dict(lr=0.001)
-lr_config = dict(warmup_iters=100, gamma=0.3, step=[5000])
-runner = dict(max_iters=7000)
+evaluation = dict(
+    interval=2000,
+    save_best='NOVEL_CLASSES_SPLIT2 bbox_mAP',
+    rule='greater')
+checkpoint_config = dict(interval=2000)
+optimizer = dict(lr=0.0005)
+lr_config = dict(
+    warmup='linear',
+    warmup_iters=200,
+    warmup_ratio=0.001,
+    gamma=0.3,
+    step=[8000, 11000])
+runner = dict(max_iters=12000)
 model = dict(roi_head=dict(bbox_head=dict(num_classes=num_classes)))
 # base model needs to be initialized with following script:
 #   tools/detection/misc/initialize_bbox_head.py
