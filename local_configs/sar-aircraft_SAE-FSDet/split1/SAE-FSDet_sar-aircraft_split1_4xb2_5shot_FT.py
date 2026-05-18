@@ -171,6 +171,8 @@ evaluation = dict(
     classwise=True,
     class_splits=['BASE_CLASSES_SPLIT1', 'NOVEL_CLASSES_SPLIT1'])
 checkpoint_config = dict(interval=108)
+log_config = dict(
+    interval=1000, hooks=[dict(type='TextLoggerHook', ignore_last=False)])
 optimizer = dict(type='SGD', lr=0.004, momentum=0.9, weight_decay=0.0001)
 lr_config = dict(
     _delete_=True,
