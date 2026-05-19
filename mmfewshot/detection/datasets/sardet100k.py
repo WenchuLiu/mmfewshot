@@ -688,7 +688,7 @@ class FewShotSARDet100KDefaultDataset(FewShotSARDet100KDataset):
         f'SPLIT{split}_{shot}SHOT': [
             dict(
                 type='ann_file',
-                ann_file=f'data/sardet100k/split{split}/'
+                ann_file=f'data/sardet100k/split1/'
                 f'FewShot_{shot}shot_train_seed0.json')
                 # f'SARDet100K_{shot}shot_train_seed42.json')
         ]

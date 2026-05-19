@@ -34,6 +34,6 @@ runner = dict(max_iters=6000)
 model = dict(roi_head=dict(bbox_head=dict(num_classes=num_classes)))
 # base model needs to be initialized with following script:
 #   tools/detection/misc/initialize_bbox_head.py
-load_from = ('work_dirs/tfa/sar-aircraft/split1/2xb2_BT/'
+load_from = ('work_dirs/tfa/sar-aircraft/split1/2xb8_BT/'
              'base_model_random_init_bbox_head.pth')
 work_dir = 'work_dirs/tfa/sar-aircraft/split1/2xb2_1shot_FT/'

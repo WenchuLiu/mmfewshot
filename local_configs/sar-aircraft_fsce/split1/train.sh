@@ -6,9 +6,9 @@
 # python tools/detection/misc/initialize_bbox_head.py --src1 work_dirs/tfa/sar-aircraft/split1/2xb8_BT/latest.pth --method random_init --save-dir work_dirs/tfa/sar-aircraft/split1/2xb8_BT/ --sar_aircraft --sar_aircraft_split 1
 
 # Step 2: Fine-tuning (6 shots)
-for shot in 1 2 3 5 10 30
+for shot in 30
 do
-    CONFIG="local_configs/sar-aircraft_fsce/split1/fsce_sar-aircraft_split1_2xb8_${shot}shot_FT.py"
+    CONFIG="local_configs/sar-aircraft_fsce/split1/fsce_sar-aircraft_split1_2xb2_${shot}shot_FT.py"
     echo ">>> Running Task: sar-aircraft_fsce/split1 SHOT_NUM=${shot} ..."
     SHOT_NUM=$shot bash tools/detection/dist_train_v2.sh "$CONFIG" 2
 done

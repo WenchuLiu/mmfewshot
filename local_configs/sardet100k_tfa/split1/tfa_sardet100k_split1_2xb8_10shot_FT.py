@@ -28,7 +28,7 @@ data = dict(
 evaluation = dict(interval=7000)
 checkpoint_config = dict(interval=7000)
 optimizer = dict(lr=0.001)
-lr_config = dict(warmup_iters=100, gamma=0.3, step=[5000])
+lr_config = dict(warmup_iters=100, gamma=0.3, step=[5500])
 runner = dict(max_iters=7000)
 model = dict(roi_head=dict(bbox_head=dict(num_classes=num_classes)))
 # base model needs to be initialized with following script:

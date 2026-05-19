@@ -683,27 +683,25 @@ class FewShotSARAircraftDefaultDataset(FewShotSARAircraftDataset):
             annotation from `DEFAULT_ANN_CONFIG`.
             For example: [dict(method='TFA', setting='1shot')].
     """
-
-    # sardet100k_benchmark = {
-    #     f'{shot}SHOT': [
-    #         dict(
-    #             type='ann_file',
-    #             ann_file=f'data/few_shot_ann/sardet100k/sar_seed1/'
-    #             f'full_box_{shot}shot_{class_name}_trainval.json')
-    #         for class_name in SARDET100K_SPLIT['ALL_CLASSES']
-    #     ]
-    #     for shot in [1, 2, 3, 5, 10, 30]
-    # }
-
     SARAircraft_benchmark = {
         f'SPLIT{split}_{shot}SHOT': [
             dict(
                 type='ann_file',
-                ann_file=f'data/SAR-Aircraft-1.0/split{split}/'
-                f'ft_{shot}shot_trainval.json')
+                ann_file=f'data/SAR-Aircraft-1.0/selected_sup_set/'
+                f'FewShot_{shot}shot_train_seed0.json')
         ]
         for shot in [1, 2, 3, 5, 10, 30] for split in [1, 2]
     }
+
+    # SARAircraft_benchmark = {
+    #     f'SPLIT{split}_{shot}SHOT': [
+    #         dict(
+    #             type='ann_file',
+    #             ann_file=f'data/SAR-Aircraft-1.0/split{split}/'
+    #             f'ft_{shot}shot_trainval.json')
+    #     ]
+    #     for shot in [1, 2, 3, 5, 10, 30] for split in [1, 2]
+    # }
 
     # pre-defined annotation config for model reproducibility
     DEFAULT_ANN_CONFIG = dict(

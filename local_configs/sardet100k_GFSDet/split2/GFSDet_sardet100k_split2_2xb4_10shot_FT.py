@@ -16,24 +16,16 @@ data = dict(
         type='FewShotSARDet100KDefaultDataset',
         ann_cfg=[dict(method='GFSDet', setting=f'SPLIT2_{num_shots}SHOT')],
         num_novel_shots=num_shots,
-        num_base_shots=5,
+        num_base_shots=num_shots,
         classes='ALL_CLASSES_SPLIT2'),
     val=dict(classes='ALL_CLASSES_SPLIT2'),
     test=dict(classes='ALL_CLASSES_SPLIT2'))
 
-evaluation = dict(
-    interval=2000,
-    save_best='NOVEL_CLASSES_SPLIT2 bbox_mAP',
-    rule='greater')
-checkpoint_config = dict(interval=2000)
-optimizer = dict(lr=0.0005)
-optimizer_config=dict(_delete_=True, grad_clip=dict(max_norm=20, norm_type=2))
-lr_config = dict(
-    warmup='linear',
-    warmup_iters=200,
-    warmup_ratio=0.001,
-    step=[8000, 11000])
-runner = dict(max_iters=12000)
+evaluation = dict(interval=6000)
+checkpoint_config = dict(interval=1000000)
+optimizer = dict(lr=0.0015)
+lr_config = dict(warmup_iters=100, step=[5000])
+runner = dict(max_iters=6000)
 
 model = dict(
     pretrained='open-mmlab://detectron2/resnet101_caffe',
