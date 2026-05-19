@@ -20,7 +20,7 @@ data = dict(
         classes='BASE_CLASSES_SPLIT2',
         ann_cfg=[dict(ann_file='data/sardet100k/split2/FewShot_test.json')]))
 
-total_images = 79625
+total_images = 33701
 total_epoch = 12
 step_epoch = 8
 batch_size = 4

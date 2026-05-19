@@ -17,7 +17,7 @@ _base_ = [
 #     step=[60000, 80000])
 # runner = dict(type='IterBasedRunner', max_iters=90000)
 
-total_images = 79625
+total_images = 33701
 total_epoch = 12
 step_epoch = 8
 batch_size = 8

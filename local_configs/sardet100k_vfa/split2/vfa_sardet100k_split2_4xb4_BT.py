@@ -6,7 +6,7 @@ _base_ = [
 ]
 
 # Override classes and ann paths for split2.
-total_images = 79625
+total_images = 33701
 total_epoch = 12
 step_epoch = 8
 batch_size = 4
